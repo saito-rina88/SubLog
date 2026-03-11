@@ -34,6 +34,7 @@
 			children = (
 				1304EDD62F5FB5F300B1E645 /* SubLog */,
 				1304EDD52F5FB5F300B1E645 /* Products */,
+				1304EE492F6111C200B1E645 /* Docs */,
 			);
 			sourceTree = "<group>";
 		};
@@ -43,6 +44,13 @@
 				1304EDD42F5FB5F300B1E645 /* SubLog.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		1304EE492F6111C200B1E645 /* Docs */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Docs;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
