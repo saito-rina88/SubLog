@@ -1,0 +1,97 @@
+{
+  "identifier" : "7A4A94A4",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "A2F39C11",
+    "_developerTeamID" : "",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 0,
+    "_locale" : "ja_JP",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "JPN",
+    "_storeKitErrors" : [
+
+    ],
+    "_subscriptionRenewalRate" : 1
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "8A21BB35",
+      "localizations" : [
+        {
+          "description" : "",
+          "displayName" : "SubLogPremium",
+          "locale" : "ja_JP"
+        }
+      ],
+      "name" : "SubLogPremium",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "¥120",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "B7A5D301",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "プレミアム月額プラン",
+              "locale" : "ja_JP"
+            }
+          ],
+          "productID" : "jp.sublog.premium.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "プレミアム月額プラン",
+          "subscriptionGroupID" : "8A21BB35",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "¥1,200",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "D3E11F4A",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "プレミアム年額プラン",
+              "locale" : "ja_JP"
+            }
+          ],
+          "productID" : "jp.sublog.premium.annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "プレミアム年額プラン",
+          "subscriptionGroupID" : "8A21BB35",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

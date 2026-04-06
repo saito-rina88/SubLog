@@ -10,14 +10,35 @@ import SwiftData
 
 @main
 struct SubLogApp: App {
+    @StateObject private var themeManager = ThemeManager()
+    @StateObject private var entitlementManager = EntitlementManager()
+    @StateObject private var notificationManager = NotificationManager()
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Service.self,
+            Subscription.self,
+            Payment.self,
+            GachaTemplate.self,
+            PaymentCustomType.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
+
+            #if DEBUG
+            let context = container.mainContext
+            let existing = try? context.fetch(FetchDescriptor<Service>())
+            if existing?.isEmpty == true {
+                SampleDataFactory.insertAll(into: context)
+            } else {
+                SampleDataFactory.insertDefaultPaymentCustomTypesIfNeeded(into: context)
+                SampleDataFactory.insertDefaultGachaTemplatesIfNeeded(into: context)
+            }
+            #endif
+
+            return container
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
@@ -25,7 +46,16 @@ struct SubLogApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootTabView()
+                .environmentObject(themeManager)
+                .environmentObject(entitlementManager)
+                .environmentObject(notificationManager)
+                .task {
+                    await entitlementManager.updatePurchasedProducts()
+                    _ = await notificationManager.requestAuthorization()
+                    let services = (try? sharedModelContainer.mainContext.fetch(FetchDescriptor<Service>())) ?? []
+                    await notificationManager.rescheduleAllReminders(services: services)
+                }
         }
         .modelContainer(sharedModelContainer)
     }
