@@ -8,6 +8,7 @@
 
 /* Begin PBXFileReference section */
 		1304EDD42F5FB5F300B1E645 /* SubLog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SubLog.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1304EECD2F616B3C00B1E645 /* SubLogStore.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = SubLogStore.storekit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +33,7 @@
 		1304EDCB2F5FB5F300B1E645 = {
 			isa = PBXGroup;
 			children = (
+				1304EECD2F616B3C00B1E645 /* SubLogStore.storekit */,
 				1304EDD62F5FB5F300B1E645 /* SubLog */,
 				1304EDD52F5FB5F300B1E645 /* Products */,
 				1304EE492F6111C200B1E645 /* Docs */,
