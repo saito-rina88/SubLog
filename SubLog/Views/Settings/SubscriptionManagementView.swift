@@ -15,6 +15,20 @@ struct SubscriptionManagementView: View {
 
     private let displayMode: DisplayMode
 
+    private var palette: SubscriptionManagementPalette {
+        SubscriptionManagementViewDataBuilder.makePalette(theme: theme.current)
+    }
+
+    private var displayState: SubscriptionManagementDisplayState {
+        SubscriptionManagementViewDataBuilder.makeDisplayState(
+            isPremium: entitlements.isPremium,
+            displayMode: displayMode
+        )
+    }
+
+    private let annualPlan = SubscriptionManagementViewDataBuilder.annualPlan()
+    private let monthlyPlan = SubscriptionManagementViewDataBuilder.monthlyPlan()
+
     init(displayMode: DisplayMode = .standard) {
         self.displayMode = displayMode
     }
@@ -26,7 +40,7 @@ struct SubscriptionManagementView: View {
                     headerSection
                     comparisonSection
 
-                    if !entitlements.isPremium {
+                    if displayState.shouldShowPlans {
                         annualPlanCard
                             .padding(.top, 8)
                         monthlyPlanCard
@@ -34,12 +48,12 @@ struct SubscriptionManagementView: View {
 
                     restoreButton
 
-                    if entitlements.isPremium {
+                    if displayState.shouldShowManageSection {
                         manageSubscriptionSection
                     }
                 }
                 .padding(.horizontal, 18)
-                .padding(.top, contentTopPadding)
+                .padding(.top, displayState.contentTopPadding)
                 .padding(.bottom, 16)
                 .frame(maxWidth: 520)
                 .frame(maxWidth: .infinity)
@@ -48,10 +62,10 @@ struct SubscriptionManagementView: View {
                 Color.clear
                     .frame(height: 56)
             }
-            .background(backgroundColor.ignoresSafeArea())
+            .background(palette.backgroundColor.ignoresSafeArea())
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
-            .tint(premiumTint)
+            .tint(palette.premiumTint)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -84,53 +98,13 @@ struct SubscriptionManagementView: View {
             .alert("解約について", isPresented: $showInfoSheet) {
                 Button("閉じる", role: .cancel) {}
             } message: {
-                Text("サブスクリプションはいつでも解約できます。また、解約はApp Storeのアカウント設定から行えます。")
+                Text(displayState.infoMessage)
             }
         }
     }
 }
 
 private extension SubscriptionManagementView {
-    var contentTopPadding: CGFloat {
-        displayMode == .serviceLimitReached ? 18 : 0
-    }
-
-    var headerTopPadding: CGFloat {
-        displayMode == .serviceLimitReached ? 12 : 0
-    }
-
-    var backgroundColor: Color {
-        theme.current.primaryXLight
-    }
-
-    var premiumTint: Color {
-        theme.current.primaryDeep
-    }
-
-    var premiumTintLight: Color {
-        theme.current.primaryLight.opacity(0.9)
-    }
-
-    var surfaceColor: Color {
-        Color.white
-    }
-
-    var premiumTintSoft: Color {
-        theme.current.primaryDeep.opacity(0.72)
-    }
-
-    var premiumTintBorder: Color {
-        theme.current.primary.opacity(0.58)
-    }
-
-    var premiumTintFill: Color {
-        theme.current.primaryDeep.opacity(0.94)
-    }
-
-    var premiumTintSolidSoft: Color {
-        theme.current.primary.opacity(0.9)
-    }
-
     var errorPresented: Binding<Bool> {
         Binding(
             get: { errorMessage != nil },
@@ -142,26 +116,10 @@ private extension SubscriptionManagementView {
         )
     }
 
-    var headerTitle: String {
-        entitlements.isPremium ? "プレミアムをご利用中です" : "プレミアムにアップグレード"
-    }
-
-    var headerSubtitle: String {
-        if entitlements.isPremium {
-            return "サービスを無制限に追加できます"
-        }
-
-        if displayMode == .serviceLimitReached {
-            return "サービスの登録数を無制限に"
-        }
-
-        return "サービスの登録数を無制限に"
-    }
-
     var headerSection: some View {
         VStack(spacing: 14) {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(premiumTintSolidSoft)
+                .fill(palette.premiumTintSolidSoft)
                 .frame(width: 54, height: 54)
                 .overlay {
                     Image(systemName: "crown.fill")
@@ -170,19 +128,19 @@ private extension SubscriptionManagementView {
                 }
 
             VStack(spacing: 6) {
-                Text(headerTitle)
+                Text(displayState.headerTitle)
                     .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(premiumTint)
+                    .foregroundStyle(palette.premiumTint)
                     .multilineTextAlignment(.center)
 
-                Text(headerSubtitle)
+                Text(displayState.headerSubtitle)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(premiumTintSoft)
+                    .foregroundStyle(palette.premiumTintSoft)
                     .multilineTextAlignment(.center)
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.top, headerTopPadding)
+        .padding(.top, displayState.headerTopPadding)
     }
 
     var comparisonSection: some View {
@@ -203,17 +161,17 @@ private extension SubscriptionManagementView {
             .background(Color.white)
             .overlay {
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(premiumTintBorder.opacity(0.55), lineWidth: 1)
+                    .stroke(palette.premiumTintBorder.opacity(0.55), lineWidth: 1)
             }
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 
             HStack(spacing: 6) {
                 Text("※")
                     .font(.system(size: 12, weight: .bold))
-                Text("サービス数は、定期支払い・単発支払いの合計です")
+                Text(displayState.comparisonFootnote)
                     .font(.system(size: 12, weight: .semibold))
             }
-            .foregroundStyle(premiumTintSoft)
+            .foregroundStyle(palette.premiumTintSoft)
             .padding(.horizontal, 4)
         }
     }
@@ -221,29 +179,29 @@ private extension SubscriptionManagementView {
     func comparisonHeaderCell(_ title: String, highlighted: Bool = false) -> some View {
         Text(title)
             .font(.system(size: 15, weight: .bold))
-            .foregroundStyle(highlighted ? Color.white : premiumTintSoft)
+            .foregroundStyle(highlighted ? Color.white : palette.premiumTintSoft)
             .frame(maxWidth: .infinity)
             .frame(height: 40)
-            .background(highlighted ? premiumTintFill : Color.clear)
+            .background(highlighted ? palette.premiumTintFill : Color.clear)
             .overlay {
                 Rectangle()
-                    .stroke(premiumTintBorder.opacity(0.55), lineWidth: 0.5)
+                    .stroke(palette.premiumTintBorder.opacity(0.55), lineWidth: 0.5)
             }
     }
 
     func comparisonValueCell(_ title: String, alignment: Alignment = .center, highlighted: Bool = false) -> some View {
         Text(title)
             .font(.system(size: 14, weight: .bold))
-            .foregroundStyle(highlighted ? premiumTint : premiumTintSoft)
+            .foregroundStyle(highlighted ? palette.premiumTint : palette.premiumTintSoft)
             .lineLimit(1)
             .minimumScaleFactor(0.85)
             .frame(maxWidth: .infinity, alignment: alignment)
             .frame(height: 46)
             .padding(.horizontal, alignment == .leading ? 12 : 0)
-            .background(highlighted ? premiumTintLight.opacity(0.45) : Color.clear)
+            .background(highlighted ? palette.premiumTintLight.opacity(0.45) : Color.clear)
             .overlay {
                 Rectangle()
-                    .stroke(premiumTintBorder.opacity(0.55), lineWidth: 0.5)
+                    .stroke(palette.premiumTintBorder.opacity(0.55), lineWidth: 0.5)
             }
     }
 
@@ -251,43 +209,45 @@ private extension SubscriptionManagementView {
         ZStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .top) {
-                    Text("年額プラン")
+                    Text(annualPlan.title)
                         .font(.system(size: 17, weight: .bold))
-                        .foregroundStyle(premiumTint)
+                        .foregroundStyle(palette.premiumTint)
 
                     Spacer()
 
-                Text("約17% OFF")
+                if let badgeText = annualPlan.badgeText {
+                    Text(badgeText)
                     .font(.system(size: 15, weight: .heavy))
-                    .foregroundStyle(premiumTint)
+                    .foregroundStyle(palette.premiumTint)
                     .padding(.horizontal, 13)
                     .padding(.vertical, 8)
                     .background(
                         Capsule(style: .continuous)
-                            .fill(premiumTintLight.opacity(0.95))
+                            .fill(palette.premiumTintLight.opacity(0.95))
                     )
                     .padding(.top, 4)
+                }
             }
 
                 HStack(alignment: .center) {
-                    Text("¥1,200/年")
+                    Text(annualPlan.priceText)
                         .font(.system(size: 26, weight: .bold))
-                        .foregroundStyle(premiumTintSoft)
+                        .foregroundStyle(palette.premiumTintSoft)
                 }
 
                 Button {
                     Task {
-                        await purchase(StoreKitConstants.ProductID.annual)
+                        await purchase(annualPlan.productID)
                     }
                 } label: {
-                    Text("年額プランで始める")
+                    Text(annualPlan.ctaTitle)
                         .font(.system(size: 17, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
                         .background(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(premiumTintFill)
+                                .fill(palette.premiumTintFill)
                         )
                 }
                 .buttonStyle(.plain)
@@ -297,17 +257,17 @@ private extension SubscriptionManagementView {
             .padding(18)
             .background(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(surfaceColor)
+                    .fill(palette.surfaceColor)
             )
             .overlay {
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(premiumTintBorder, lineWidth: 2)
+                    .stroke(palette.premiumTintBorder, lineWidth: 2)
             }
             .padding(.top, 8)
 
             ZStack {
                 Capsule(style: .continuous)
-                    .fill(backgroundColor)
+                    .fill(palette.backgroundColor)
                     .frame(width: 84, height: 34)
 
                 Text("おすすめ")
@@ -317,7 +277,7 @@ private extension SubscriptionManagementView {
                     .padding(.vertical, 6)
                     .background(
                         Capsule(style: .continuous)
-                            .fill(premiumTint.opacity(0.82))
+                            .fill(palette.premiumTint.opacity(0.82))
                     )
             }
             .offset(y: -8)
@@ -328,9 +288,9 @@ private extension SubscriptionManagementView {
     var monthlyPlanCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 10) {
-                Text("月額プラン")
+                Text(monthlyPlan.title)
                     .font(.system(size: 17, weight: .bold))
-                    .foregroundStyle(premiumTint)
+                    .foregroundStyle(palette.premiumTint)
 
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
                     Text("¥120")
@@ -338,17 +298,17 @@ private extension SubscriptionManagementView {
                     Text("/月")
                         .font(.system(size: 13, weight: .bold))
                 }
-                .foregroundStyle(premiumTint)
+                .foregroundStyle(palette.premiumTint)
             }
 
             Button {
                 Task {
-                    await purchase(StoreKitConstants.ProductID.monthly)
+                    await purchase(monthlyPlan.productID)
                 }
             } label: {
-                Text("月額プランで始める")
+                Text(monthlyPlan.ctaTitle)
                     .font(.system(size: 17, weight: .bold))
-                    .foregroundStyle(premiumTint)
+                    .foregroundStyle(palette.premiumTint)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .background(
@@ -357,7 +317,7 @@ private extension SubscriptionManagementView {
                     )
                     .overlay {
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .stroke(premiumTintBorder, lineWidth: 2)
+                            .stroke(palette.premiumTintBorder, lineWidth: 2)
                     }
             }
             .buttonStyle(.plain)
@@ -367,23 +327,23 @@ private extension SubscriptionManagementView {
         .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(surfaceColor)
+                .fill(palette.surfaceColor)
         )
         .overlay {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(premiumTintBorder.opacity(0.6), lineWidth: 1)
+                .stroke(palette.premiumTintBorder.opacity(0.6), lineWidth: 1)
         }
     }
 
     var restoreButton: some View {
-        Button("購入を復元する") {
+        Button(displayState.restoreButtonTitle) {
             Task {
                 await restorePurchases()
             }
         }
         .buttonStyle(.plain)
         .font(.system(size: 17, weight: .bold))
-        .foregroundStyle(premiumTintSoft)
+        .foregroundStyle(palette.premiumTintSoft)
         .frame(maxWidth: .infinity)
         .padding(.top, 6)
         .disabled(isProcessing)
@@ -392,11 +352,11 @@ private extension SubscriptionManagementView {
 
     var manageSubscriptionSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("サブスクリプション管理")
+            Text(displayState.manageTitle)
                 .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(premiumTint)
+                .foregroundStyle(palette.premiumTint)
 
-            Button("プランを解約する") {
+            Button(displayState.manageButtonTitle) {
                 if let url = URL(string: "itms-apps://apps.apple.com/account/subscriptions") {
                     UIApplication.shared.open(url)
                 }
@@ -404,7 +364,7 @@ private extension SubscriptionManagementView {
             .buttonStyle(.bordered)
             .tint(.red)
 
-            Text("解約はAppleのサブスクリプション管理画面から行えます")
+            Text(displayState.manageCaption)
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -412,7 +372,7 @@ private extension SubscriptionManagementView {
         .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(surfaceColor)
+                .fill(palette.surfaceColor)
         )
     }
 

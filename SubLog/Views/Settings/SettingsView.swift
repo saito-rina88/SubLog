@@ -11,6 +11,14 @@ struct SettingsView: View {
     @State private var showFinalDeleteConfirmation = false
     @State private var showSubscriptionManagement = false
 
+    private var sectionData: [SettingsSectionData] {
+        SettingsViewDataBuilder.makeSections()
+    }
+
+    private var premiumBannerState: SettingsPremiumBannerState {
+        SettingsViewDataBuilder.premiumBannerState(isPremium: entitlements.isPremium, theme: theme.current)
+    }
+
     var body: some View {
         NavigationStack {
             List {
@@ -21,50 +29,14 @@ struct SettingsView: View {
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
 
-                Section(
-                    header: Text("カスタマイズ")
-                        .foregroundStyle(theme.current.primaryDeep)
-                ) {
-                    NavigationLink("サービス一覧の編集") {
-                        ServiceListView(managementMode: true)
-                    }
-
-                    NavigationLink("利用中のサブスク") {
-                        ActiveSubscriptionsView()
-                    }
-
-                    NavigationLink("購入内容テンプレート") {
-                        GachaTemplateSettingsView()
-                    }
-
-                    NavigationLink("カラーテーマ") {
-                        ThemeSelectView()
-                    }
-                }
-
-                Section(
-                    header: Text("データ")
-                        .foregroundStyle(theme.current.primaryDeep)
-                ) {
-                    Button("データエクスポート") {
-                        showExportAlert = true
-                    }
-
-                    Button("データをすべて削除", role: .destructive) {
-                        showDeleteConfirmation = true
-                    }
-                }
-
-                Section(
-                    header: Text("ヘルプ")
-                        .foregroundStyle(theme.current.primaryDeep)
-                ) {
-                    NavigationLink("購入内容テンプレートについて") {
-                        EmptyView()
-                    }
-
-                    NavigationLink("プレミアムプランの解約方法について") {
-                        EmptyView()
+                ForEach(sectionData) { section in
+                    Section(
+                        header: Text(section.title)
+                            .foregroundStyle(theme.current.primaryDeep)
+                    ) {
+                        ForEach(section.items) { item in
+                            settingsRow(for: item)
+                        }
                     }
                 }
             }
@@ -106,14 +78,6 @@ struct SettingsView: View {
 }
 
 private extension SettingsView {
-    var premiumBannerBrightColor: Color {
-        entitlements.isPremium ? theme.current.primaryDark : theme.current.primary
-    }
-
-    var premiumBannerDarkColor: Color {
-        theme.current.primaryDark
-    }
-
     var premiumBanner: some View {
         Button {
             showSubscriptionManagement = true
@@ -136,13 +100,13 @@ private extension SettingsView {
                     .frame(width: 28)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(entitlements.isPremium ? "プレミアム会員" : "プレミアムにアップグレード")
+                    Text(premiumBannerState.title)
                         .font(.headline)
                         .fontWeight(.bold)
                         .foregroundStyle(.white)
                         .lineLimit(1)
                         .minimumScaleFactor(0.82)
-                    Text(entitlements.isPremium ? "サービス登録数が無制限です" : "サービスを無制限に登録できます")
+                    Text(premiumBannerState.subtitle)
                         .font(.caption)
                         .foregroundStyle(.white.opacity(0.85))
                         .fixedSize(horizontal: false, vertical: true)
@@ -150,7 +114,7 @@ private extension SettingsView {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .layoutPriority(1)
 
-                Text(entitlements.isPremium ? "管理する" : "詳しく見る >")
+                Text(premiumBannerState.buttonTitle)
                     .font(.caption)
                     .fontWeight(.medium)
                     .foregroundStyle(.white)
@@ -167,13 +131,66 @@ private extension SettingsView {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 22)
-            .background(premiumBannerBrightColor)
+            .background(premiumBannerState.backgroundColor)
             .cornerRadius(16)
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
         .padding(.top, 12)
         .padding(.bottom, 0)
+    }
+
+    @ViewBuilder
+    func settingsRow(for item: SettingsSectionItem) -> some View {
+        if let destination = item.destination {
+            navigationRow(title: item.title, destination: destination)
+        } else if let action = item.action {
+            actionRow(title: item.title, action: action)
+        }
+    }
+
+    @ViewBuilder
+    func navigationRow(title: String, destination: SettingsSectionItem.Destination) -> some View {
+        switch destination {
+        case .serviceListManagement:
+            NavigationLink(title) {
+                ServiceListView(managementMode: true)
+            }
+        case .activeSubscriptions:
+            NavigationLink(title) {
+                ActiveSubscriptionsView()
+            }
+        case .gachaTemplateSettings:
+            NavigationLink(title) {
+                GachaTemplateSettingsView()
+            }
+        case .themeSelect:
+            NavigationLink(title) {
+                ThemeSelectView()
+            }
+        case .helpPurchaseTemplate:
+            NavigationLink(title) {
+                EmptyView()
+            }
+        case .helpPremiumCancellation:
+            NavigationLink(title) {
+                EmptyView()
+            }
+        }
+    }
+
+    @ViewBuilder
+    func actionRow(title: String, action: SettingsSectionItem.Action) -> some View {
+        switch action {
+        case .exportData:
+            Button(title) {
+                showExportAlert = true
+            }
+        case .deleteAllData:
+            Button(title, role: .destructive) {
+                showDeleteConfirmation = true
+            }
+        }
     }
 
     func deleteAllServices() {
