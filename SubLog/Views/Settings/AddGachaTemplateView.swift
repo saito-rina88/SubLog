@@ -13,6 +13,15 @@ struct AddGachaTemplateView: View {
 
     private let preselectedService: Service?
 
+    private var viewData: AddGachaTemplateViewData {
+        AddGachaTemplateViewDataBuilder.build(
+            services: services,
+            selectedServiceID: selectedServiceID,
+            label: label,
+            amountText: amountText
+        )
+    }
+
     init(preselectedService: Service? = nil) {
         self.preselectedService = preselectedService
     }
@@ -22,8 +31,8 @@ struct AddGachaTemplateView: View {
             ScrollView {
                 VStack(spacing: 12) {
                     inputCard(title: "サービス") {
-                        Text(selectedService?.name ?? "未選択")
-                            .foregroundStyle(selectedService == nil ? .secondary : .primary)
+                        Text(viewData.selectedService?.name ?? "未選択")
+                            .foregroundStyle(viewData.selectedService == nil ? .secondary : .primary)
                     }
 
                     inputCard(title: "テンプレート名") {
@@ -54,7 +63,7 @@ struct AddGachaTemplateView: View {
             }
             .onAppear {
                 if selectedServiceID == nil {
-                    selectedServiceID = preselectedService?.persistentModelID ?? gameServices.first?.persistentModelID
+                    selectedServiceID = preselectedService?.persistentModelID ?? viewData.gameServices.first?.persistentModelID
                 }
             }
         }
@@ -81,8 +90,8 @@ private extension AddGachaTemplateView {
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .buttonStyle(.plain)
-        .disabled(!canSave)
-        .opacity(canSave ? 1 : 0.4)
+        .disabled(!viewData.canSave)
+        .opacity(viewData.canSave ? 1 : 0.4)
     }
 
     func inputCard<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
@@ -100,40 +109,15 @@ private extension AddGachaTemplateView {
         )
     }
 
-    var selectedService: Service? {
-        guard let selectedServiceID else { return nil }
-        return gameServices.first { $0.persistentModelID == selectedServiceID }
-    }
-
-    var gameServices: [Service] {
-        services
-            .filter { $0.serviceType == .game && !$0.isArchived }
-            .sorted { $0.name < $1.name }
-    }
-
-    var amountValue: Int {
-        Int(amountText) ?? 0
-    }
-
-    var trimmedAmountText: String {
-        amountText.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    var canSave: Bool {
-        !label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        (trimmedAmountText.isEmpty || amountValue > 0) &&
-        selectedServiceID != nil
-    }
-
     func saveTemplate() {
-        guard let selectedService, canSave else {
+        guard let selectedService = viewData.selectedService, viewData.canSave else {
             return
         }
 
         let sortOrder = (selectedService.gachaTemplates.map(\.sortOrder).max() ?? -1) + 1
         let template = GachaTemplate(
-            label: label.trimmingCharacters(in: .whitespacesAndNewlines),
-            amount: trimmedAmountText.isEmpty ? nil : amountValue,
+            label: viewData.trimmedLabel,
+            amount: viewData.trimmedAmountText.isEmpty ? nil : viewData.amountValue,
             service: selectedService,
             sortOrder: sortOrder
         )

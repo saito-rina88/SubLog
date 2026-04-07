@@ -14,6 +14,14 @@ struct ServiceDetailView: View {
 
     private let calendar = Calendar.current
 
+    private var viewData: ServiceDetailViewData {
+        ServiceDetailViewDataBuilder.build(
+            service: service,
+            summaryScope: summaryScope,
+            calendar: calendar
+        )
+    }
+
     init(service: Service, summaryScope: SummaryScope = .currentMonth) {
         self.service = service
         self.summaryScope = summaryScope
@@ -38,49 +46,6 @@ struct ServiceDetailView: View {
 }
 
 private extension ServiceDetailView {
-    var totalAmount: Int {
-        service.payments.reduce(0) { $0 + $1.amount }
-    }
-
-    var focusedPeriodAmount: Int {
-        switch summaryScope {
-        case .currentMonth:
-            return service.payments
-                .filter { calendar.isDate($0.date, equalTo: .now, toGranularity: .month) }
-                .reduce(0) { $0 + $1.amount }
-        case let .analyticsMonth(date):
-            return service.payments
-                .filter { calendar.isDate($0.date, equalTo: date, toGranularity: .month) }
-                .reduce(0) { $0 + $1.amount }
-        case let .analyticsYear(year):
-            return service.payments
-                .filter { calendar.component(.year, from: $0.date) == year }
-                .reduce(0) { $0 + $1.amount }
-        }
-    }
-
-    var focusedPeriodTitle: String {
-        switch summaryScope {
-        case .currentMonth, .analyticsMonth:
-            return "今月の支払額"
-        case .analyticsYear:
-            return "今年の支払額"
-        }
-    }
-
-    var paymentCount: Int {
-        service.payments.count
-    }
-
-    var sortedPayments: [Payment] {
-        service.payments.sorted { lhs, rhs in
-            if lhs.date == rhs.date {
-                return lhs.type < rhs.type
-            }
-            return lhs.date > rhs.date
-        }
-    }
-
     var headerSection: some View {
         HStack(spacing: 14) {
             ServiceIconView(service: service, size: 44)
@@ -106,9 +71,9 @@ private extension ServiceDetailView {
 
     var statCardsSection: some View {
         HStack(spacing: 12) {
-            statCard(title: "累計金額", value: totalAmount, isAmount: true)
-            statCard(title: focusedPeriodTitle, value: focusedPeriodAmount, isAmount: true)
-            statCard(title: "支払回数", value: paymentCount, isAmount: false)
+            statCard(title: "累計金額", value: viewData.totalAmount, isAmount: true)
+            statCard(title: viewData.focusedPeriodTitle, value: viewData.focusedPeriodAmount, isAmount: true)
+            statCard(title: "支払回数", value: viewData.paymentCount, isAmount: false)
         }
     }
 
@@ -117,14 +82,14 @@ private extension ServiceDetailView {
             Text("支払い履歴")
                 .font(.title3.weight(.semibold))
 
-            if sortedPayments.isEmpty {
+            if viewData.isPaymentHistoryEmpty {
                 Text("課金履歴はまだありません。")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             } else {
-                ForEach(sortedPayments, id: \.persistentModelID) { payment in
+                ForEach(viewData.paymentRows) { row in
                     HStack(spacing: 12) {
-                        Text(payment.date.formatted(historyDateFormat))
+                        Text(row.formattedDate)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .frame(width: 90, alignment: .leading)
@@ -132,18 +97,18 @@ private extension ServiceDetailView {
                         Image(systemName: "creditcard")
                             .foregroundStyle(theme.current.primary)
 
-                        Text(payment.type.replacingOccurrences(of: "、", with: "\n"))
+                        Text(row.payment.type.replacingOccurrences(of: "、", with: "\n"))
                             .font(.subheadline)
                             .multilineTextAlignment(.leading)
 
                         Spacer()
 
-                        Text(payment.amount, format: .currency(code: "JPY"))
+                        Text(row.payment.amount, format: .currency(code: "JPY"))
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(theme.current.primary)
                     }
 
-                    if payment.persistentModelID != sortedPayments.last?.persistentModelID {
+                    if row.id != viewData.paymentRows.last?.id {
                         Divider()
                     }
                 }
@@ -181,13 +146,6 @@ private extension ServiceDetailView {
                 .fill(.white)
                 .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
         )
-    }
-
-    var historyDateFormat: Date.FormatStyle {
-        Date.FormatStyle()
-            .year(.defaultDigits)
-            .month(.twoDigits)
-            .day(.twoDigits)
     }
 }
 

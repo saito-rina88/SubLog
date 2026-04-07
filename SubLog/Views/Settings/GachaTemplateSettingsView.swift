@@ -18,10 +18,14 @@ struct GachaTemplateSettingsView: View {
     private let mutedText = Color(red: 86 / 255, green: 95 / 255, blue: 126 / 255).opacity(0.78)
     private let sectionText = Color(red: 142 / 255, green: 142 / 255, blue: 147 / 255)
 
+    private var viewData: GachaTemplateSettingsViewData {
+        GachaTemplateSettingsViewDataBuilder.build(services: services)
+    }
+
     var body: some View {
         NavigationStack {
             List {
-                if gameServices.isEmpty {
+                if viewData.isEmpty {
                     Section {
                         emptyState
                             .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
@@ -29,10 +33,10 @@ struct GachaTemplateSettingsView: View {
                             .listRowSeparator(.hidden)
                     }
                 } else {
-                    ForEach(gameServices, id: \.persistentModelID) { service in
+                    ForEach(viewData.serviceRows) { row in
                         TemplateServiceSectionView(
-                            service: service,
-                            onAddTemplate: { addTemplate(for: service) },
+                            service: row.service,
+                            onAddTemplate: { addTemplate(for: row.service) },
                             onEditTemplate: { template in
                                 selectedTemplateForEdit = template
                             },
@@ -94,10 +98,6 @@ struct GachaTemplateSettingsView: View {
 }
 
 private extension GachaTemplateSettingsView {
-    var gameServices: [Service] {
-        services.filter { $0.serviceType == .game && !$0.isArchived }
-    }
-
     func addTemplate(for service: Service) {
         selectedServiceForSheet = service
         showAddSheet = true
@@ -120,7 +120,7 @@ private extension GachaTemplateSettingsView {
                 .font(.system(size: 44, weight: .regular))
                 .foregroundStyle(.secondary)
 
-            Text("購入内容テンプレートを利用できるサービスがありません")
+            Text(viewData.emptyStateTitle)
                 .font(.headline)
                 .multilineTextAlignment(.center)
         }

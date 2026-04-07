@@ -5,6 +5,7 @@ import SwiftData
 struct EditServiceView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.displayScale) private var displayScale
     @EnvironmentObject private var theme: ThemeManager
 
     let service: Service
@@ -19,6 +20,15 @@ struct EditServiceView: View {
     @State private var showIconSourceDialog = false
     @State private var showPhotoPicker = false
     @State private var showPresetIconSheet = false
+
+    private var viewData: EditServiceViewData {
+        EditServiceViewDataBuilder.build(
+            name: name,
+            category: category,
+            presetIconCategory: presetIconCategory,
+            iconData: iconData
+        )
+    }
 
     init(service: Service, fixedServiceType: ServiceType? = nil) {
         self.service = service
@@ -119,15 +129,15 @@ private extension EditServiceView {
                                 .frame(width: 80, height: 80)
                                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                         } else {
-                            Image(systemName: selectedCategory.sfSymbol)
+                            Image(systemName: viewData.selectedCategory.sfSymbol)
                                 .font(.title2)
-                                .foregroundStyle(selectedCategory.tintColor)
+                                .foregroundStyle(viewData.selectedCategory.tintColor)
                         }
                     }
                 }
                 .buttonStyle(.plain)
 
-                Text("タップして変更")
+                Text(viewData.iconButtonTitle)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
@@ -185,8 +195,8 @@ private extension EditServiceView {
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .buttonStyle(.plain)
-        .disabled(trimmedName.isEmpty)
-        .opacity(trimmedName.isEmpty ? 0.4 : 1)
+        .disabled(!viewData.canSave)
+        .opacity(viewData.canSave ? 1 : 0.4)
     }
 
     func inputCard<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
@@ -204,27 +214,16 @@ private extension EditServiceView {
         )
     }
 
-    var trimmedName: String {
-        name.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
     func save() {
-        guard !trimmedName.isEmpty else { return }
+        guard viewData.canSave else { return }
 
-        service.name = trimmedName
-        service.category = selectedCategory
+        service.name = viewData.trimmedName
+        service.category = viewData.selectedCategory
         service.serviceType = serviceType
         service.icon = iconData
 
         try? modelContext.save()
         dismiss()
-    }
-
-    var selectedCategory: Category {
-        if let presetIconCategory {
-            return presetIconCategory
-        }
-        return category
     }
 
     func presetIconButton(for category: Category) -> some View {
@@ -278,7 +277,7 @@ private extension EditServiceView {
         .frame(width: 160, height: 160)
 
         let renderer = ImageRenderer(content: iconView)
-        renderer.scale = UIScreen.main.scale
+        renderer.scale = displayScale
         return renderer.uiImage?.pngData()
     }
 

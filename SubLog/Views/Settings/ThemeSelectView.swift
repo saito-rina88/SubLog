@@ -3,43 +3,45 @@ import SwiftUI
 struct ThemeSelectView: View {
     @EnvironmentObject private var theme: ThemeManager
 
+    private var viewData: ThemeSelectViewData {
+        ThemeSelectViewDataBuilder.build(currentThemeID: theme.current.id)
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 14) {
-                    ForEach(ThemeManager.allThemes) { appTheme in
+                    ForEach(viewData.items) { item in
                         Button {
-                            theme.select(appTheme)
+                            theme.select(item.theme)
                         } label: {
                             HStack(spacing: 12) {
                                 HStack(spacing: 8) {
-                                    themeCircle(appTheme.primary)
-                                    themeCircle(appTheme.primaryDark)
-                                    themeCircle(appTheme.primaryMid)
-                                    themeCircle(appTheme.primaryLight)
-                                    themeCircle(appTheme.primaryXLight)
+                                    ForEach(Array(item.previewColors.enumerated()), id: \.offset) { _, color in
+                                        themeCircle(color)
+                                    }
                                 }
 
-                                Text(appTheme.name)
+                                Text(item.theme.name)
                                     .font(.headline)
                                     .foregroundStyle(.primary)
 
                                 Spacer()
 
-                                Image(systemName: isSelected(appTheme) ? "checkmark.circle.fill" : "circle")
+                                Image(systemName: item.isSelected ? "checkmark.circle.fill" : "circle")
                                     .font(.title3)
-                                    .foregroundStyle(isSelected(appTheme) ? theme.current.primary : .gray)
+                                    .foregroundStyle(item.isSelected ? theme.current.primary : .gray)
                             }
                             .padding(18)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(
                                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .fill(isSelected(appTheme) ? theme.current.primaryLight : Color(uiColor: .systemBackground))
+                                    .fill(item.isSelected ? theme.current.primaryLight : Color(uiColor: .systemBackground))
                             )
                             .overlay {
                                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                                     .stroke(
-                                        isSelected(appTheme) ? theme.current.primary : .clear,
+                                        item.isSelected ? theme.current.primary : .clear,
                                         lineWidth: 2
                                     )
                             }
@@ -72,10 +74,6 @@ struct ThemeSelectView: View {
 }
 
 private extension ThemeSelectView {
-    func isSelected(_ appTheme: AppTheme) -> Bool {
-        theme.current.id == appTheme.id
-    }
-
     func themeCircle(_ color: Color) -> some View {
         Circle()
             .fill(color)

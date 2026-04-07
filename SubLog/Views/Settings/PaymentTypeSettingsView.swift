@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import CoreGraphics
 
 struct PaymentTypeSettingsView: View {
     var isSheet: Bool = false
@@ -15,22 +16,26 @@ struct PaymentTypeSettingsView: View {
     @State private var deleteTarget: PaymentCustomType? = nil
     @State private var showDeleteConfirm = false
 
+    private var viewData: PaymentTypeSettingsViewData {
+        PaymentTypeSettingsViewDataBuilder.build(customTypes: customTypes)
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 12) {
                 List {
-                    ForEach(customTypes) { type in
+                    ForEach(viewData.rows) { row in
                         HStack(spacing: 12) {
-                            Text(type.name)
+                            Text(row.displayName)
                                 .font(.body)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
-                                    editingType = type
+                                    editingType = row.type
                                 }
 
                             Button {
-                                deleteTarget = type
+                                deleteTarget = row.type
                                 showDeleteConfirm = true
                             } label: {
                                 Image(systemName: "trash")
@@ -81,7 +86,7 @@ struct PaymentTypeSettingsView: View {
                 }
                 .listStyle(.insetGrouped)
                 .environment(\.editMode, .constant(.active))
-                .frame(height: listHeight)
+                .frame(height: viewData.listHeight)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .background(Color(.systemGroupedBackground))
             .navigationTitle("課金タイプ管理")
@@ -134,10 +139,6 @@ struct PaymentTypeSettingsView: View {
 }
 
 private extension PaymentTypeSettingsView {
-    var listHeight: CGFloat {
-        CGFloat(customTypes.count) * 56 + 16
-    }
-
     func typeSheet(
         title: String,
         name: Binding<String>,
@@ -166,8 +167,8 @@ private extension PaymentTypeSettingsView {
                     Spacer()
 
                     Button("保存") {
-                        let trimmed = name.wrappedValue.trimmingCharacters(in: .whitespaces)
-                        guard !trimmed.isEmpty else { return }
+                        let trimmed = PaymentTypeSettingsViewDataBuilder.normalizedName(name.wrappedValue)
+                        guard PaymentTypeSettingsViewDataBuilder.canSave(name: trimmed) else { return }
                         name.wrappedValue = trimmed
                         onSave()
                         showAddSheet = false

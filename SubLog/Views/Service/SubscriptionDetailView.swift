@@ -13,7 +13,6 @@ struct SubscriptionDetailView: View {
     }
 
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var entitlements: EntitlementManager
     @EnvironmentObject private var notificationManager: NotificationManager
     @EnvironmentObject private var theme: ThemeManager
 
@@ -31,11 +30,22 @@ struct SubscriptionDetailView: View {
 
     private let calendar = Calendar.current
 
+    private var viewData: SubscriptionDetailViewData {
+        SubscriptionDetailViewDataBuilder.build(
+            subscription: subscription,
+            reminderDaysBefore: reminderDaysBefore,
+            calendar: calendar
+        )
+    }
+
     init(subscription: Subscription, service: Service) {
         self.subscription = subscription
         self.service = service
 
-        let initialState = Self.initialReminderState(for: subscription)
+        let initialState = SubscriptionDetailViewDataBuilder.initialReminderState(
+            for: subscription,
+            notificationManager: NotificationManager()
+        )
         _isReminderOn = State(initialValue: initialState.isEnabled)
         _reminderTime = State(initialValue: initialState.time)
         _reminderDaysBefore = State(initialValue: initialState.daysBefore)
@@ -87,65 +97,6 @@ struct SubscriptionDetailView: View {
 }
 
 private extension SubscriptionDetailView {
-    static func initialReminderState(for subscription: Subscription) -> (isEnabled: Bool, time: Date, daysBefore: Int) {
-        let defaultTime = Calendar.current.date(
-            bySettingHour: 9,
-            minute: 0,
-            second: 0,
-            of: Date()
-        ) ?? Date()
-
-        let key = "reminderSettings-\(subscription.persistentModelID)"
-        guard let data = UserDefaults.standard.data(forKey: key),
-              let settings = try? JSONDecoder().decode(NotificationManager.ReminderSettings.self, from: data) else {
-            return (false, defaultTime, 3)
-        }
-
-        let reminderTime = Calendar.current.date(
-            bySettingHour: settings.hour,
-            minute: settings.minute,
-            second: 0,
-            of: Date()
-        ) ?? defaultTime
-
-        return (true, reminderTime, max(settings.daysBefore, 1))
-    }
-
-    var nextRenewalDate: Date? {
-        guard subscription.isActive else { return nil }
-
-        let interval = subscription.renewalInterval
-        var components = DateComponents()
-
-        switch interval.unit {
-        case .day:
-            components.day = interval.value
-        case .week:
-            components.weekOfYear = interval.value
-        case .month:
-            components.month = interval.value
-        case .year:
-            components.year = interval.value
-        }
-
-        var base = subscription.startDate
-        let now = Date()
-
-        while base <= now {
-            guard let next = calendar.date(byAdding: components, to: base), next > base else {
-                break
-            }
-            base = next
-        }
-
-        return base
-    }
-
-    var daysUntilRenewal: Int? {
-        guard let next = nextRenewalDate else { return nil }
-        return calendar.dateComponents([.day], from: Date(), to: next).day
-    }
-
     var headerSection: some View {
         HStack(spacing: 14) {
             ServiceIconView(service: service, size: 44)
@@ -174,20 +125,20 @@ private extension SubscriptionDetailView {
 
                 renewalIntervalRow
 
-                if let next = nextRenewalDate, let days = daysUntilRenewal {
+                if let nextText = viewData.nextRenewalDateText, let renewalBadgeText = viewData.renewalBadgeText {
                     HStack {
                         Text("次回更新日")
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Text(dateString(next))
+                        Text(nextText)
                             .foregroundStyle(.primary)
-                        Text("あと\(days)日")
+                        Text(renewalBadgeText)
                             .font(.caption)
                             .fontWeight(.medium)
-                            .foregroundStyle(days <= 7 ? theme.current.primaryDark : theme.current.primary)
+                            .foregroundStyle(viewData.isRenewalSoon ? theme.current.primaryDark : theme.current.primary)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .background(days <= 7 ? theme.current.primaryLight : theme.current.primaryXLight)
+                            .background(viewData.isRenewalSoon ? theme.current.primaryLight : theme.current.primaryXLight)
                             .cornerRadius(6)
                     }
                 }
@@ -241,7 +192,7 @@ private extension SubscriptionDetailView {
                             Image(systemName: "info.circle")
                                 .foregroundStyle(.secondary)
                                 .font(.caption)
-                            Text("\(reminderDaysBefore)日前と当日に通知します")
+                            Text(viewData.reminderSummaryText)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -288,8 +239,8 @@ private extension SubscriptionDetailView {
                         Text("解約済み")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
-                        if let date = subscription.canceledDate {
-                            Text("（\(canceledDateString(date))）")
+                        if let canceledDateText = viewData.canceledDateText {
+                            Text("（\(canceledDateText)）")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -372,41 +323,14 @@ private extension SubscriptionDetailView {
             )
     }
 
-    func canceledDateString(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP")
-        formatter.dateFormat = "yyyy/MM/dd"
-        return formatter.string(from: date)
-    }
-
-    func dateString(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP")
-        formatter.dateFormat = "yyyy/MM/dd"
-        return formatter.string(from: date)
-    }
-
     func refreshReminderState() {
-        guard let settings = notificationManager.reminderSettings(for: subscription) else {
-            isReminderOn = false
-            reminderTime = Calendar.current.date(
-                bySettingHour: 9,
-                minute: 0,
-                second: 0,
-                of: Date()
-            ) ?? Date()
-            reminderDaysBefore = 3
-            return
-        }
-
-        isReminderOn = true
-        reminderTime = Calendar.current.date(
-            bySettingHour: settings.hour,
-            minute: settings.minute,
-            second: 0,
-            of: Date()
-        ) ?? Date()
-        reminderDaysBefore = max(settings.daysBefore, 1)
+        let reminderState = SubscriptionDetailViewDataBuilder.initialReminderState(
+            for: subscription,
+            notificationManager: notificationManager
+        )
+        isReminderOn = reminderState.isEnabled
+        reminderTime = reminderState.time
+        reminderDaysBefore = reminderState.daysBefore
     }
 
     func handleReminderChange(_ newValue: Bool) {

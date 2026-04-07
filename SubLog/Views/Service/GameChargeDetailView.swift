@@ -1,15 +1,6 @@
 import SwiftUI
 import SwiftData
 
-private enum PaymentField: Identifiable {
-    case amount
-    case type
-    case date
-    case memo
-
-    var id: Self { self }
-}
-
 struct GameChargeDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -18,6 +9,10 @@ struct GameChargeDetailView: View {
     let payment: Payment
 
     @State private var editingField: PaymentField?
+
+    private var viewData: GameChargeDetailViewData {
+        GameChargeDetailViewDataBuilder.build(payment: payment)
+    }
 
     var body: some View {
         NavigationStack {
@@ -47,7 +42,7 @@ private extension GameChargeDetailView {
                     RoundedRectangle(cornerRadius: 11, style: .continuous)
                         .fill(Color(.systemBackground))
                 )
-            Text(payment.service.name)
+            Text(viewData.serviceName)
                 .font(.headline)
                 .fontWeight(.bold)
                 .foregroundStyle(theme.current.primaryDeep)
@@ -62,19 +57,12 @@ private extension GameChargeDetailView {
 
     var paymentInfoCard: some View {
         VStack(alignment: .leading, spacing: 0) {
-            infoButtonRow(label: "金額", value: "¥\(payment.amount.formatted())", field: .amount)
-            Divider()
-            infoButtonRow(
-                label: "購入内容",
-                value: payment.type.replacingOccurrences(of: "、", with: "\n"),
-                field: .type
-            )
-            Divider()
-            infoButtonRow(label: "日付", value: dateString(payment.date), field: .date)
+            ForEach(Array(viewData.infoRows.enumerated()), id: \.element.id) { index, row in
+                infoButtonRow(label: row.label, value: row.value, field: row.field)
 
-            if let memo = payment.memo, !memo.isEmpty {
-                Divider()
-                infoButtonRow(label: "メモ", value: memo, field: .memo)
+                if index < viewData.infoRows.count - 1 {
+                    Divider()
+                }
             }
         }
         .padding(16)
@@ -101,13 +89,6 @@ private extension GameChargeDetailView {
         }
         .foregroundStyle(.primary)
         .buttonStyle(.plain)
-    }
-
-    func dateString(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP")
-        formatter.dateFormat = "yyyy/MM/dd"
-        return formatter.string(from: date)
     }
 }
 

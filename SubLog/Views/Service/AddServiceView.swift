@@ -5,6 +5,7 @@ import SwiftData
 struct AddServiceView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.displayScale) private var displayScale
     @EnvironmentObject private var theme: ThemeManager
     @Query private var services: [Service]
 
@@ -18,6 +19,16 @@ struct AddServiceView: View {
     @State private var showIconSourceDialog = false
     @State private var showPhotoPicker = false
     @State private var showPresetIconSheet = false
+
+    private var viewData: AddServiceViewData {
+        AddServiceViewDataBuilder.build(
+            services: services,
+            name: name,
+            serviceType: serviceType,
+            presetIconCategory: presetIconCategory,
+            iconData: iconData
+        )
+    }
 
     init(serviceType: ServiceType? = nil) {
         self.fixedServiceType = serviceType
@@ -108,7 +119,7 @@ private extension AddServiceView {
                 }
                 .buttonStyle(.plain)
 
-                Text(iconData == nil ? "タップして設定" : "タップして変更")
+                Text(viewData.iconButtonTitle)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
@@ -166,8 +177,8 @@ private extension AddServiceView {
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .buttonStyle(.plain)
-        .disabled(trimmedName.isEmpty)
-        .opacity(trimmedName.isEmpty ? 0.4 : 1)
+        .disabled(!viewData.canSave)
+        .opacity(viewData.canSave ? 1 : 0.4)
     }
 
     func inputCard<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
@@ -185,35 +196,19 @@ private extension AddServiceView {
         )
     }
 
-    var trimmedName: String {
-        name.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    var nextSortOrder: Int {
-        (services
-            .filter { $0.serviceType == serviceType && !$0.isArchived }
-            .map(\.sortOrder)
-            .max() ?? -1) + 1
-    }
-
     func saveService() {
         let service = Service(
-            name: trimmedName,
-            category: selectedCategory,
+            name: viewData.trimmedName,
+            category: viewData.selectedCategory,
             serviceType: serviceType,
-            sortOrder: nextSortOrder,
+            sortOrder: viewData.nextSortOrder,
             icon: iconData,
             createdAt: .now
         )
         service.subscriptions = []
         service.payments = []
         if serviceType == .game {
-            let defaultTemplates: [(label: String, amount: Int?)] = [
-                ("アイテム購入", nil),
-                ("マンスリーパス", 610),
-                ("シーズンパス", 1_220)
-            ]
-            service.gachaTemplates = defaultTemplates.enumerated().map { index, template in
+            service.gachaTemplates = AddServiceViewDataBuilder.defaultGameTemplates.enumerated().map { index, template in
                 GachaTemplate(
                     label: template.label,
                     amount: template.amount,
@@ -227,18 +222,6 @@ private extension AddServiceView {
 
         modelContext.insert(service)
         dismiss()
-    }
-
-    var selectedCategory: Category {
-        if let presetIconCategory {
-            return presetIconCategory
-        }
-        switch serviceType {
-        case .game:
-            return .game
-        case .subscription:
-            return .other
-        }
     }
 
     func presetIconButton(for category: Category) -> some View {
@@ -291,7 +274,7 @@ private extension AddServiceView {
         .frame(width: 160, height: 160)
 
         let renderer = ImageRenderer(content: iconView)
-        renderer.scale = UIScreen.main.scale
+        renderer.scale = displayScale
         return renderer.uiImage?.pngData()
     }
 

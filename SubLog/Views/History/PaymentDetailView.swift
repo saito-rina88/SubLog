@@ -1,35 +1,37 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct PaymentDetailView: View {
     @EnvironmentObject private var theme: ThemeManager
     let payment: Payment
     @State private var showEditSheet = false
 
+    private var viewData: PaymentDetailViewData {
+        PaymentDetailViewDataBuilder.build(payment: payment)
+    }
+
     var body: some View {
         NavigationStack {
             Form {
                 Section("サービス情報") {
-                    LabeledContent("サービス名", value: payment.service.name)
-                    LabeledContent("カテゴリ", value: payment.service.category.displayName)
+                    LabeledContent("サービス名", value: viewData.serviceName)
+                    LabeledContent("カテゴリ", value: viewData.categoryName)
                 }
 
                 Section("支払い情報") {
-                    LabeledContent("金額") {
-                        Text(payment.amount, format: .currency(code: "JPY"))
-                    }
-                    LabeledContent("支払いタイプ", value: payment.type.replacingOccurrences(of: "、", with: "\n"))
-                    LabeledContent("日付", value: payment.date.formatted(detailDateFormat))
+                    LabeledContent("金額", value: viewData.amountText)
+                    LabeledContent("支払いタイプ", value: viewData.paymentTypeText)
+                    LabeledContent("日付", value: viewData.dateText)
                 }
 
-                if let memo = payment.memo {
+                if let memo = viewData.memoText {
                     Section("メモ") {
                         Text(memo)
                     }
                 }
 
-                if let screenshotData = payment.screenshotData,
-                   let uiImage = UIImage(data: screenshotData) {
+                if let uiImage = viewData.screenshotImage {
                     Section("スクリーンショット") {
                         Image(uiImage: uiImage)
                             .resizable()
@@ -39,7 +41,7 @@ struct PaymentDetailView: View {
                     }
                 }
             }
-            .navigationTitle(payment.service.name)
+            .navigationTitle(viewData.serviceName)
             .tint(theme.current.primary)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -54,15 +56,6 @@ struct PaymentDetailView: View {
                 EditPaymentView(payment: payment)
             }
         }
-    }
-}
-
-private extension PaymentDetailView {
-    var detailDateFormat: Date.FormatStyle {
-        Date.FormatStyle()
-            .year(.defaultDigits)
-            .month(.twoDigits)
-            .day(.twoDigits)
     }
 }
 

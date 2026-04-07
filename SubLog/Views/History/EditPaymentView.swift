@@ -14,6 +14,10 @@ struct EditPaymentView: View {
     @State private var itemName: String
     @State private var memo: String
 
+    private var viewData: EditPaymentViewData {
+        EditPaymentViewDataBuilder.build(amountText: amountText)
+    }
+
     init(payment: Payment) {
         self.payment = payment
         _date = State(initialValue: payment.date)
@@ -60,7 +64,7 @@ struct EditPaymentView: View {
                     Button("保存") {
                         save()
                     }
-                    .disabled(amountValue <= 0)
+                    .disabled(!viewData.canSave)
                 }
             }
         }
@@ -68,28 +72,17 @@ struct EditPaymentView: View {
 }
 
 private extension EditPaymentView {
-    var amountValue: Int {
-        Int(amountText) ?? 0
-    }
-
     func save() {
-        guard amountValue > 0 else { return }
+        guard viewData.canSave else { return }
 
         payment.date = date
-        payment.amount = amountValue
+        payment.amount = viewData.amountValue
         payment.type = type
-        payment.itemName = itemName.nilIfEmpty
-        payment.memo = memo.nilIfEmpty
+        payment.itemName = EditPaymentViewDataBuilder.normalizedOptionalText(itemName)
+        payment.memo = EditPaymentViewDataBuilder.normalizedOptionalText(memo)
 
         try? modelContext.save()
         dismiss()
-    }
-}
-
-private extension String {
-    var nilIfEmpty: String? {
-        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? nil : trimmed
     }
 }
 
