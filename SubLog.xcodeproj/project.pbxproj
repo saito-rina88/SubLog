@@ -6,14 +6,179 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		139AFCB72F848BD9005F64FD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 139AFCB22F848BD9005F64FD /* Assets.xcassets */; };
+		139AFCBB2F848BD9005F64FD /* BillingType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC752F848BD9005F64FD /* BillingType.swift */; };
+		139AFCBC2F848BD9005F64FD /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC762F848BD9005F64FD /* Category.swift */; };
+		139AFCBD2F848BD9005F64FD /* RenewalIntervalUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC772F848BD9005F64FD /* RenewalIntervalUnit.swift */; };
+		139AFCBE2F848BD9005F64FD /* ServiceType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC782F848BD9005F64FD /* ServiceType.swift */; };
+		139AFCBF2F848BD9005F64FD /* EntitlementManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC7B2F848BD9005F64FD /* EntitlementManager.swift */; };
+		139AFCC02F848BD9005F64FD /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC7C2F848BD9005F64FD /* NotificationManager.swift */; };
+		139AFCC12F848BD9005F64FD /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC7D2F848BD9005F64FD /* ThemeManager.swift */; };
+		139AFCC22F848BD9005F64FD /* GachaTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC7F2F848BD9005F64FD /* GachaTemplate.swift */; };
+		139AFCC32F848BD9005F64FD /* Payment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC802F848BD9005F64FD /* Payment.swift */; };
+		139AFCC42F848BD9005F64FD /* PaymentCustomType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC812F848BD9005F64FD /* PaymentCustomType.swift */; };
+		139AFCC52F848BD9005F64FD /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC822F848BD9005F64FD /* Service.swift */; };
+		139AFCC62F848BD9005F64FD /* Subscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC832F848BD9005F64FD /* Subscription.swift */; };
+		139AFCC72F848BD9005F64FD /* SampleDataFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC862F848BD9005F64FD /* SampleDataFactory.swift */; };
+		139AFCC82F848BD9005F64FD /* StoreKitConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC882F848BD9005F64FD /* StoreKitConstants.swift */; };
+		139AFCC92F848BD9005F64FD /* AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC8B2F848BD9005F64FD /* AnalyticsView.swift */; };
+		139AFCCA2F848BD9005F64FD /* AnalyticsViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC8C2F848BD9005F64FD /* AnalyticsViewData.swift */; };
+		139AFCCB2F848BD9005F64FD /* EditPaymentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC8E2F848BD9005F64FD /* EditPaymentView.swift */; };
+		139AFCCC2F848BD9005F64FD /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC8F2F848BD9005F64FD /* HistoryView.swift */; };
+		139AFCCD2F848BD9005F64FD /* HistoryViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC902F848BD9005F64FD /* HistoryViewData.swift */; };
+		139AFCCE2F848BD9005F64FD /* PaymentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC912F848BD9005F64FD /* PaymentDetailView.swift */; };
+		139AFCCF2F848BD9005F64FD /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC932F848BD9005F64FD /* HomeView.swift */; };
+		139AFCD02F848BD9005F64FD /* HomeViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC942F848BD9005F64FD /* HomeViewData.swift */; };
+		139AFCD22F848BD9005F64FD /* Step1TypeSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC972F848BD9005F64FD /* Step1TypeSelectView.swift */; };
+		139AFCD32F848BD9005F64FD /* Step2ServiceSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC982F848BD9005F64FD /* Step2ServiceSelectView.swift */; };
+		139AFCD42F848BD9005F64FD /* Step3aSubscDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC992F848BD9005F64FD /* Step3aSubscDetailView.swift */; };
+		139AFCD52F848BD9005F64FD /* Step3bGameDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC9A2F848BD9005F64FD /* Step3bGameDetailView.swift */; };
+		139AFCD62F848BD9005F64FD /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC9C2F848BD9005F64FD /* RootTabView.swift */; };
+		139AFCD72F848BD9005F64FD /* AddServiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC9E2F848BD9005F64FD /* AddServiceView.swift */; };
+		139AFCD82F848BD9005F64FD /* EditServiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFC9F2F848BD9005F64FD /* EditServiceView.swift */; };
+		139AFCD92F848BD9005F64FD /* GameChargeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCA02F848BD9005F64FD /* GameChargeDetailView.swift */; };
+		139AFCDA2F848BD9005F64FD /* ServiceDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCA12F848BD9005F64FD /* ServiceDetailView.swift */; };
+		139AFCDB2F848BD9005F64FD /* ServiceListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCA22F848BD9005F64FD /* ServiceListView.swift */; };
+		139AFCDC2F848BD9005F64FD /* ServiceManagementHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCA32F848BD9005F64FD /* ServiceManagementHomeView.swift */; };
+		139AFCDD2F848BD9005F64FD /* SubscriptionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCA42F848BD9005F64FD /* SubscriptionDetailView.swift */; };
+		139AFCDE2F848BD9005F64FD /* AddGachaTemplateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCA62F848BD9005F64FD /* AddGachaTemplateView.swift */; };
+		139AFCDF2F848BD9005F64FD /* GachaTemplateSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCA72F848BD9005F64FD /* GachaTemplateSettingsView.swift */; };
+		139AFCE02F848BD9005F64FD /* PaymentTypeSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCA82F848BD9005F64FD /* PaymentTypeSettingsView.swift */; };
+		139AFCE12F848BD9005F64FD /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCA92F848BD9005F64FD /* SettingsView.swift */; };
+		139AFCE22F848BD9005F64FD /* SettingsViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCAA2F848BD9005F64FD /* SettingsViewData.swift */; };
+		139AFCE32F848BD9005F64FD /* SubscriptionManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCAB2F848BD9005F64FD /* SubscriptionManagementView.swift */; };
+		139AFCE42F848BD9005F64FD /* ThemeSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCAC2F848BD9005F64FD /* ThemeSelectView.swift */; };
+		139AFCE52F848BD9005F64FD /* ActiveSubscriptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCAE2F848BD9005F64FD /* ActiveSubscriptionsView.swift */; };
+		139AFCE62F848BD9005F64FD /* EditSubscriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCAF2F848BD9005F64FD /* EditSubscriptionView.swift */; };
+		139AFCE72F848BD9005F64FD /* SubLogApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCB32F848BD9005F64FD /* SubLogApp.swift */; };
+		139AFCE92F848C6D005F64FD /* SubscriptionManagementViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCE82F848C6D005F64FD /* SubscriptionManagementViewData.swift */; };
+		139AFCEB2F848E02005F64FD /* RecordFlowState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCEA2F848E02005F64FD /* RecordFlowState.swift */; };
+		139AFCED2F848E1B005F64FD /* RecordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCEC2F848E1B005F64FD /* RecordView.swift */; };
+		139AFCEF2F848E71005F64FD /* Step2ServiceSelectViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCEE2F848E71005F64FD /* Step2ServiceSelectViewData.swift */; };
+		139AFCF12F848EFC005F64FD /* Step3aSubscDetailViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCF02F848EFC005F64FD /* Step3aSubscDetailViewData.swift */; };
+		139AFCF32F848FB9005F64FD /* Step3bGameDetailViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCF22F848FB9005F64FD /* Step3bGameDetailViewData.swift */; };
+		139AFCF52F8490AD005F64FD /* ServiceListViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCF42F8490AD005F64FD /* ServiceListViewData.swift */; };
+		139AFCF72F8491CC005F64FD /* AddServiceViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCF62F8491CC005F64FD /* AddServiceViewData.swift */; };
+		139AFCF92F84929B005F64FD /* EditServiceViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCF82F84929B005F64FD /* EditServiceViewData.swift */; };
+		139AFCFB2F849321005F64FD /* ServiceDetailViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCFA2F849321005F64FD /* ServiceDetailViewData.swift */; };
+		139AFCFD2F8493BF005F64FD /* SubscriptionDetailViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCFC2F8493BF005F64FD /* SubscriptionDetailViewData.swift */; };
+		139AFCFF2F849596005F64FD /* GameChargeDetailViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFCFE2F849596005F64FD /* GameChargeDetailViewData.swift */; };
+		139AFD012F849624005F64FD /* PaymentDetailViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD002F849624005F64FD /* PaymentDetailViewData.swift */; };
+		139AFD032F8496A9005F64FD /* EditPaymentViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD022F8496A9005F64FD /* EditPaymentViewData.swift */; };
+		139AFD052F849772005F64FD /* PaymentTypeSettingsViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD042F849772005F64FD /* PaymentTypeSettingsViewData.swift */; };
+		139AFD072F849807005F64FD /* GachaTemplateSettingsViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD062F849807005F64FD /* GachaTemplateSettingsViewData.swift */; };
+		139AFD092F84988D005F64FD /* AddGachaTemplateViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD082F84988D005F64FD /* AddGachaTemplateViewData.swift */; };
+		139AFD0B2F849907005F64FD /* ThemeSelectViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD0A2F849907005F64FD /* ThemeSelectViewData.swift */; };
+		139AFD0D2F8499E4005F64FD /* ViewDataCommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD0C2F8499E4005F64FD /* ViewDataCommon.swift */; };
+		139AFD212F849E97005F64FD /* EditSubscriptionViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD202F849E97005F64FD /* EditSubscriptionViewData.swift */; };
+		139AFD232F849F5A005F64FD /* ActiveSubscriptionsViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD222F849F5A005F64FD /* ActiveSubscriptionsViewData.swift */; };
+		139AFD252F84A025005F64FD /* ServiceManagementHomeViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD242F84A025005F64FD /* ServiceManagementHomeViewData.swift */; };
+		139AFD272F84A108005F64FD /* Step1TypeSelectViewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD262F84A108005F64FD /* Step1TypeSelectViewData.swift */; };
+		139AFD292F84A1E5005F64FD /* ThemeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD282F84A1E5005F64FD /* ThemeCatalog.swift */; };
+		139AFD2B2F84A287005F64FD /* NotificationManagerSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD2A2F84A287005F64FD /* NotificationManagerSupport.swift */; };
+		139AFD2D2F84B02F005F64FD /* EntitlementStoreKitSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD2C2F84B02F005F64FD /* EntitlementStoreKitSupport.swift */; };
+		139AFD2F2F84B427005F64FD /* ServiceTypeCardCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD2E2F84B427005F64FD /* ServiceTypeCardCatalog.swift */; };
+		139AFD322F84BBBB005F64FD /* MessageCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD312F84BBBB005F64FD /* MessageCatalog.swift */; };
+		139AFD342F84BCC2005F64FD /* AppLimits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD332F84BCC2005F64FD /* AppLimits.swift */; };
+		139AFD362F84C82B005F64FD /* PaymentContentCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139AFD352F84C82B005F64FD /* PaymentContentCatalog.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		1304EDD42F5FB5F300B1E645 /* SubLog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SubLog.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		1304EECD2F616B3C00B1E645 /* SubLogStore.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = SubLogStore.storekit; sourceTree = "<group>"; };
+		139AFC752F848BD9005F64FD /* BillingType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingType.swift; sourceTree = "<group>"; };
+		139AFC762F848BD9005F64FD /* Category.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
+		139AFC772F848BD9005F64FD /* RenewalIntervalUnit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenewalIntervalUnit.swift; sourceTree = "<group>"; };
+		139AFC782F848BD9005F64FD /* ServiceType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceType.swift; sourceTree = "<group>"; };
+		139AFC7B2F848BD9005F64FD /* EntitlementManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementManager.swift; sourceTree = "<group>"; };
+		139AFC7C2F848BD9005F64FD /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		139AFC7D2F848BD9005F64FD /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
+		139AFC7F2F848BD9005F64FD /* GachaTemplate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaTemplate.swift; sourceTree = "<group>"; };
+		139AFC802F848BD9005F64FD /* Payment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Payment.swift; sourceTree = "<group>"; };
+		139AFC812F848BD9005F64FD /* PaymentCustomType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentCustomType.swift; sourceTree = "<group>"; };
+		139AFC822F848BD9005F64FD /* Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Service.swift; sourceTree = "<group>"; };
+		139AFC832F848BD9005F64FD /* Subscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Subscription.swift; sourceTree = "<group>"; };
+		139AFC862F848BD9005F64FD /* SampleDataFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleDataFactory.swift; sourceTree = "<group>"; };
+		139AFC882F848BD9005F64FD /* StoreKitConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitConstants.swift; sourceTree = "<group>"; };
+		139AFC8B2F848BD9005F64FD /* AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsView.swift; sourceTree = "<group>"; };
+		139AFC8C2F848BD9005F64FD /* AnalyticsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsViewData.swift; sourceTree = "<group>"; };
+		139AFC8E2F848BD9005F64FD /* EditPaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPaymentView.swift; sourceTree = "<group>"; };
+		139AFC8F2F848BD9005F64FD /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		139AFC902F848BD9005F64FD /* HistoryViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewData.swift; sourceTree = "<group>"; };
+		139AFC912F848BD9005F64FD /* PaymentDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentDetailView.swift; sourceTree = "<group>"; };
+		139AFC932F848BD9005F64FD /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		139AFC942F848BD9005F64FD /* HomeViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewData.swift; sourceTree = "<group>"; };
+		139AFC972F848BD9005F64FD /* Step1TypeSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Step1TypeSelectView.swift; sourceTree = "<group>"; };
+		139AFC982F848BD9005F64FD /* Step2ServiceSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Step2ServiceSelectView.swift; sourceTree = "<group>"; };
+		139AFC992F848BD9005F64FD /* Step3aSubscDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Step3aSubscDetailView.swift; sourceTree = "<group>"; };
+		139AFC9A2F848BD9005F64FD /* Step3bGameDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Step3bGameDetailView.swift; sourceTree = "<group>"; };
+		139AFC9C2F848BD9005F64FD /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
+		139AFC9E2F848BD9005F64FD /* AddServiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddServiceView.swift; sourceTree = "<group>"; };
+		139AFC9F2F848BD9005F64FD /* EditServiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditServiceView.swift; sourceTree = "<group>"; };
+		139AFCA02F848BD9005F64FD /* GameChargeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameChargeDetailView.swift; sourceTree = "<group>"; };
+		139AFCA12F848BD9005F64FD /* ServiceDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDetailView.swift; sourceTree = "<group>"; };
+		139AFCA22F848BD9005F64FD /* ServiceListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceListView.swift; sourceTree = "<group>"; };
+		139AFCA32F848BD9005F64FD /* ServiceManagementHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceManagementHomeView.swift; sourceTree = "<group>"; };
+		139AFCA42F848BD9005F64FD /* SubscriptionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionDetailView.swift; sourceTree = "<group>"; };
+		139AFCA62F848BD9005F64FD /* AddGachaTemplateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddGachaTemplateView.swift; sourceTree = "<group>"; };
+		139AFCA72F848BD9005F64FD /* GachaTemplateSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaTemplateSettingsView.swift; sourceTree = "<group>"; };
+		139AFCA82F848BD9005F64FD /* PaymentTypeSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentTypeSettingsView.swift; sourceTree = "<group>"; };
+		139AFCA92F848BD9005F64FD /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		139AFCAA2F848BD9005F64FD /* SettingsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewData.swift; sourceTree = "<group>"; };
+		139AFCAB2F848BD9005F64FD /* SubscriptionManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionManagementView.swift; sourceTree = "<group>"; };
+		139AFCAC2F848BD9005F64FD /* ThemeSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeSelectView.swift; sourceTree = "<group>"; };
+		139AFCAE2F848BD9005F64FD /* ActiveSubscriptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSubscriptionsView.swift; sourceTree = "<group>"; };
+		139AFCAF2F848BD9005F64FD /* EditSubscriptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditSubscriptionView.swift; sourceTree = "<group>"; };
+		139AFCB22F848BD9005F64FD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		139AFCB32F848BD9005F64FD /* SubLogApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubLogApp.swift; sourceTree = "<group>"; };
+		139AFCE82F848C6D005F64FD /* SubscriptionManagementViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionManagementViewData.swift; sourceTree = "<group>"; };
+		139AFCEA2F848E02005F64FD /* RecordFlowState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordFlowState.swift; sourceTree = "<group>"; };
+		139AFCEC2F848E1B005F64FD /* RecordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordView.swift; sourceTree = "<group>"; };
+		139AFCEE2F848E71005F64FD /* Step2ServiceSelectViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Step2ServiceSelectViewData.swift; sourceTree = "<group>"; };
+		139AFCF02F848EFC005F64FD /* Step3aSubscDetailViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Step3aSubscDetailViewData.swift; sourceTree = "<group>"; };
+		139AFCF22F848FB9005F64FD /* Step3bGameDetailViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Step3bGameDetailViewData.swift; sourceTree = "<group>"; };
+		139AFCF42F8490AD005F64FD /* ServiceListViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceListViewData.swift; sourceTree = "<group>"; };
+		139AFCF62F8491CC005F64FD /* AddServiceViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddServiceViewData.swift; sourceTree = "<group>"; };
+		139AFCF82F84929B005F64FD /* EditServiceViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditServiceViewData.swift; sourceTree = "<group>"; };
+		139AFCFA2F849321005F64FD /* ServiceDetailViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDetailViewData.swift; sourceTree = "<group>"; };
+		139AFCFC2F8493BF005F64FD /* SubscriptionDetailViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionDetailViewData.swift; sourceTree = "<group>"; };
+		139AFCFE2F849596005F64FD /* GameChargeDetailViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameChargeDetailViewData.swift; sourceTree = "<group>"; };
+		139AFD002F849624005F64FD /* PaymentDetailViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentDetailViewData.swift; sourceTree = "<group>"; };
+		139AFD022F8496A9005F64FD /* EditPaymentViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPaymentViewData.swift; sourceTree = "<group>"; };
+		139AFD042F849772005F64FD /* PaymentTypeSettingsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentTypeSettingsViewData.swift; sourceTree = "<group>"; };
+		139AFD062F849807005F64FD /* GachaTemplateSettingsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GachaTemplateSettingsViewData.swift; sourceTree = "<group>"; };
+		139AFD082F84988D005F64FD /* AddGachaTemplateViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddGachaTemplateViewData.swift; sourceTree = "<group>"; };
+		139AFD0A2F849907005F64FD /* ThemeSelectViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeSelectViewData.swift; sourceTree = "<group>"; };
+		139AFD0C2F8499E4005F64FD /* ViewDataCommon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewDataCommon.swift; sourceTree = "<group>"; };
+		139AFD202F849E97005F64FD /* EditSubscriptionViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditSubscriptionViewData.swift; sourceTree = "<group>"; };
+		139AFD222F849F5A005F64FD /* ActiveSubscriptionsViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSubscriptionsViewData.swift; sourceTree = "<group>"; };
+		139AFD242F84A025005F64FD /* ServiceManagementHomeViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceManagementHomeViewData.swift; sourceTree = "<group>"; };
+		139AFD262F84A108005F64FD /* Step1TypeSelectViewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Step1TypeSelectViewData.swift; sourceTree = "<group>"; };
+		139AFD282F84A1E5005F64FD /* ThemeCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeCatalog.swift; sourceTree = "<group>"; };
+		139AFD2A2F84A287005F64FD /* NotificationManagerSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManagerSupport.swift; sourceTree = "<group>"; };
+		139AFD2C2F84B02F005F64FD /* EntitlementStoreKitSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementStoreKitSupport.swift; sourceTree = "<group>"; };
+		139AFD2E2F84B427005F64FD /* ServiceTypeCardCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceTypeCardCatalog.swift; sourceTree = "<group>"; };
+		139AFD312F84BBBB005F64FD /* MessageCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCatalog.swift; sourceTree = "<group>"; };
+		139AFD332F84BCC2005F64FD /* AppLimits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLimits.swift; sourceTree = "<group>"; };
+		139AFD352F84C82B005F64FD /* PaymentContentCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentContentCatalog.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		139AFD1F2F849BAA005F64FD /* Exceptions for "SubLog" folder in "SubLog" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Resources/SubLogStore.storekit,
+			);
+			target = 1304EDD32F5FB5F300B1E645 /* SubLog */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		1304EDD62F5FB5F300B1E645 /* SubLog */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				139AFD1F2F849BAA005F64FD /* Exceptions for "SubLog" folder in "SubLog" target */,
+			);
 			path = SubLog;
 			sourceTree = "<group>";
 		};
@@ -33,10 +198,14 @@
 		1304EDCB2F5FB5F300B1E645 = {
 			isa = PBXGroup;
 			children = (
-				1304EECD2F616B3C00B1E645 /* SubLogStore.storekit */,
 				1304EDD62F5FB5F300B1E645 /* SubLog */,
 				1304EDD52F5FB5F300B1E645 /* Products */,
 				1304EE492F6111C200B1E645 /* Docs */,
+				139AFD0E2F849B7D005F64FD /* App */,
+				139AFD0F2F849B7D005F64FD /* Assets */,
+				139AFD102F849B85005F64FD /* Domain */,
+				139AFD112F849B85005F64FD /* Features */,
+				139AFD122F849B85005F64FD /* Shared */,
 			);
 			sourceTree = "<group>";
 		};
@@ -53,6 +222,220 @@
 			children = (
 			);
 			path = Docs;
+			sourceTree = "<group>";
+		};
+		139AFD0E2F849B7D005F64FD /* App */ = {
+			isa = PBXGroup;
+			children = (
+				139AFCB32F848BD9005F64FD /* SubLogApp.swift */,
+				139AFC9C2F848BD9005F64FD /* RootTabView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		139AFD0F2F849B7D005F64FD /* Assets */ = {
+			isa = PBXGroup;
+			children = (
+				139AFCB22F848BD9005F64FD /* Assets.xcassets */,
+			);
+			path = Assets;
+			sourceTree = "<group>";
+		};
+		139AFD102F849B85005F64FD /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				139AFD132F849B91005F64FD /* Models */,
+				139AFD142F849B91005F64FD /* Enums */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
+		139AFD112F849B85005F64FD /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				139AFD152F849B91005F64FD /* Home */,
+				139AFD162F849B91005F64FD /* History */,
+				139AFD172F849B91005F64FD /* Analytics */,
+				139AFD182F849B91005F64FD /* Record */,
+				139AFD192F849B91005F64FD /* Service */,
+				139AFD1A2F849B91005F64FD /* Settings */,
+				139AFD1B2F849B91005F64FD /* SubscriptionAdmin */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		139AFD122F849B85005F64FD /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				139AFD1C2F849B91005F64FD /* Managers */,
+				139AFD1D2F849B92005F64FD /* SampleData */,
+				139AFD1E2F849B92005F64FD /* Utilities */,
+				139AFD302F84B5CF005F64FD /* Theme */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		139AFD132F849B91005F64FD /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				139AFC822F848BD9005F64FD /* Service.swift */,
+				139AFC832F848BD9005F64FD /* Subscription.swift */,
+				139AFC802F848BD9005F64FD /* Payment.swift */,
+				139AFC7F2F848BD9005F64FD /* GachaTemplate.swift */,
+				139AFC812F848BD9005F64FD /* PaymentCustomType.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		139AFD142F849B91005F64FD /* Enums */ = {
+			isa = PBXGroup;
+			children = (
+				139AFC752F848BD9005F64FD /* BillingType.swift */,
+				139AFC762F848BD9005F64FD /* Category.swift */,
+				139AFC772F848BD9005F64FD /* RenewalIntervalUnit.swift */,
+				139AFC782F848BD9005F64FD /* ServiceType.swift */,
+			);
+			path = Enums;
+			sourceTree = "<group>";
+		};
+		139AFD152F849B91005F64FD /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				139AFC932F848BD9005F64FD /* HomeView.swift */,
+				139AFC942F848BD9005F64FD /* HomeViewData.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		139AFD162F849B91005F64FD /* History */ = {
+			isa = PBXGroup;
+			children = (
+				139AFC8F2F848BD9005F64FD /* HistoryView.swift */,
+				139AFC902F848BD9005F64FD /* HistoryViewData.swift */,
+				139AFC912F848BD9005F64FD /* PaymentDetailView.swift */,
+				139AFD002F849624005F64FD /* PaymentDetailViewData.swift */,
+				139AFC8E2F848BD9005F64FD /* EditPaymentView.swift */,
+				139AFD022F8496A9005F64FD /* EditPaymentViewData.swift */,
+			);
+			path = History;
+			sourceTree = "<group>";
+		};
+		139AFD172F849B91005F64FD /* Analytics */ = {
+			isa = PBXGroup;
+			children = (
+				139AFC8B2F848BD9005F64FD /* AnalyticsView.swift */,
+				139AFC8C2F848BD9005F64FD /* AnalyticsViewData.swift */,
+			);
+			path = Analytics;
+			sourceTree = "<group>";
+		};
+		139AFD182F849B91005F64FD /* Record */ = {
+			isa = PBXGroup;
+			children = (
+				139AFCEC2F848E1B005F64FD /* RecordView.swift */,
+				139AFC972F848BD9005F64FD /* Step1TypeSelectView.swift */,
+				139AFCEA2F848E02005F64FD /* RecordFlowState.swift */,
+				139AFC982F848BD9005F64FD /* Step2ServiceSelectView.swift */,
+				139AFCEE2F848E71005F64FD /* Step2ServiceSelectViewData.swift */,
+				139AFCF02F848EFC005F64FD /* Step3aSubscDetailViewData.swift */,
+				139AFC992F848BD9005F64FD /* Step3aSubscDetailView.swift */,
+				139AFCF22F848FB9005F64FD /* Step3bGameDetailViewData.swift */,
+				139AFC9A2F848BD9005F64FD /* Step3bGameDetailView.swift */,
+				139AFD262F84A108005F64FD /* Step1TypeSelectViewData.swift */,
+			);
+			path = Record;
+			sourceTree = "<group>";
+		};
+		139AFD192F849B91005F64FD /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				139AFCA32F848BD9005F64FD /* ServiceManagementHomeView.swift */,
+				139AFCA22F848BD9005F64FD /* ServiceListView.swift */,
+				139AFCF42F8490AD005F64FD /* ServiceListViewData.swift */,
+				139AFC9E2F848BD9005F64FD /* AddServiceView.swift */,
+				139AFCF62F8491CC005F64FD /* AddServiceViewData.swift */,
+				139AFC9F2F848BD9005F64FD /* EditServiceView.swift */,
+				139AFCF82F84929B005F64FD /* EditServiceViewData.swift */,
+				139AFCA12F848BD9005F64FD /* ServiceDetailView.swift */,
+				139AFCFA2F849321005F64FD /* ServiceDetailViewData.swift */,
+				139AFCA42F848BD9005F64FD /* SubscriptionDetailView.swift */,
+				139AFCFC2F8493BF005F64FD /* SubscriptionDetailViewData.swift */,
+				139AFCA02F848BD9005F64FD /* GameChargeDetailView.swift */,
+				139AFCFE2F849596005F64FD /* GameChargeDetailViewData.swift */,
+				139AFD242F84A025005F64FD /* ServiceManagementHomeViewData.swift */,
+			);
+			path = Service;
+			sourceTree = "<group>";
+		};
+		139AFD1A2F849B91005F64FD /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				139AFCA92F848BD9005F64FD /* SettingsView.swift */,
+				139AFCAA2F848BD9005F64FD /* SettingsViewData.swift */,
+				139AFCAB2F848BD9005F64FD /* SubscriptionManagementView.swift */,
+				139AFCE82F848C6D005F64FD /* SubscriptionManagementViewData.swift */,
+				139AFD0A2F849907005F64FD /* ThemeSelectViewData.swift */,
+				139AFCAC2F848BD9005F64FD /* ThemeSelectView.swift */,
+				139AFCA62F848BD9005F64FD /* AddGachaTemplateView.swift */,
+				139AFD082F84988D005F64FD /* AddGachaTemplateViewData.swift */,
+				139AFCA72F848BD9005F64FD /* GachaTemplateSettingsView.swift */,
+				139AFD062F849807005F64FD /* GachaTemplateSettingsViewData.swift */,
+				139AFCA82F848BD9005F64FD /* PaymentTypeSettingsView.swift */,
+				139AFD042F849772005F64FD /* PaymentTypeSettingsViewData.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		139AFD1B2F849B91005F64FD /* SubscriptionAdmin */ = {
+			isa = PBXGroup;
+			children = (
+				139AFCAF2F848BD9005F64FD /* EditSubscriptionView.swift */,
+				139AFCAE2F848BD9005F64FD /* ActiveSubscriptionsView.swift */,
+				139AFD202F849E97005F64FD /* EditSubscriptionViewData.swift */,
+				139AFD222F849F5A005F64FD /* ActiveSubscriptionsViewData.swift */,
+			);
+			path = SubscriptionAdmin;
+			sourceTree = "<group>";
+		};
+		139AFD1C2F849B91005F64FD /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				139AFC7B2F848BD9005F64FD /* EntitlementManager.swift */,
+				139AFC7C2F848BD9005F64FD /* NotificationManager.swift */,
+				139AFC7D2F848BD9005F64FD /* ThemeManager.swift */,
+				139AFD2A2F84A287005F64FD /* NotificationManagerSupport.swift */,
+				139AFD2C2F84B02F005F64FD /* EntitlementStoreKitSupport.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
+		139AFD1D2F849B92005F64FD /* SampleData */ = {
+			isa = PBXGroup;
+			children = (
+				139AFC862F848BD9005F64FD /* SampleDataFactory.swift */,
+			);
+			path = SampleData;
+			sourceTree = "<group>";
+		};
+		139AFD1E2F849B92005F64FD /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				139AFC882F848BD9005F64FD /* StoreKitConstants.swift */,
+				139AFD0C2F8499E4005F64FD /* ViewDataCommon.swift */,
+				139AFD2E2F84B427005F64FD /* ServiceTypeCardCatalog.swift */,
+				139AFD312F84BBBB005F64FD /* MessageCatalog.swift */,
+				139AFD332F84BCC2005F64FD /* AppLimits.swift */,
+				139AFD352F84C82B005F64FD /* PaymentContentCatalog.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		139AFD302F84B5CF005F64FD /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				139AFD282F84A1E5005F64FD /* ThemeCatalog.swift */,
+			);
+			path = Theme;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -119,6 +502,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				139AFCB72F848BD9005F64FD /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -129,6 +513,80 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				139AFD252F84A025005F64FD /* ServiceManagementHomeViewData.swift in Sources */,
+				139AFCBB2F848BD9005F64FD /* BillingType.swift in Sources */,
+				139AFD012F849624005F64FD /* PaymentDetailViewData.swift in Sources */,
+				139AFCBC2F848BD9005F64FD /* Category.swift in Sources */,
+				139AFCBD2F848BD9005F64FD /* RenewalIntervalUnit.swift in Sources */,
+				139AFCBE2F848BD9005F64FD /* ServiceType.swift in Sources */,
+				139AFCBF2F848BD9005F64FD /* EntitlementManager.swift in Sources */,
+				139AFCC02F848BD9005F64FD /* NotificationManager.swift in Sources */,
+				139AFCC12F848BD9005F64FD /* ThemeManager.swift in Sources */,
+				139AFCFD2F8493BF005F64FD /* SubscriptionDetailViewData.swift in Sources */,
+				139AFCC22F848BD9005F64FD /* GachaTemplate.swift in Sources */,
+				139AFCC32F848BD9005F64FD /* Payment.swift in Sources */,
+				139AFCEF2F848E71005F64FD /* Step2ServiceSelectViewData.swift in Sources */,
+				139AFCC42F848BD9005F64FD /* PaymentCustomType.swift in Sources */,
+				139AFCE92F848C6D005F64FD /* SubscriptionManagementViewData.swift in Sources */,
+				139AFCC52F848BD9005F64FD /* Service.swift in Sources */,
+				139AFCF72F8491CC005F64FD /* AddServiceViewData.swift in Sources */,
+				139AFCC62F848BD9005F64FD /* Subscription.swift in Sources */,
+				139AFD292F84A1E5005F64FD /* ThemeCatalog.swift in Sources */,
+				139AFD212F849E97005F64FD /* EditSubscriptionViewData.swift in Sources */,
+				139AFCC72F848BD9005F64FD /* SampleDataFactory.swift in Sources */,
+				139AFD0B2F849907005F64FD /* ThemeSelectViewData.swift in Sources */,
+				139AFCF12F848EFC005F64FD /* Step3aSubscDetailViewData.swift in Sources */,
+				139AFCC82F848BD9005F64FD /* StoreKitConstants.swift in Sources */,
+				139AFCC92F848BD9005F64FD /* AnalyticsView.swift in Sources */,
+				139AFCCA2F848BD9005F64FD /* AnalyticsViewData.swift in Sources */,
+				139AFCCB2F848BD9005F64FD /* EditPaymentView.swift in Sources */,
+				139AFCF32F848FB9005F64FD /* Step3bGameDetailViewData.swift in Sources */,
+				139AFD072F849807005F64FD /* GachaTemplateSettingsViewData.swift in Sources */,
+				139AFCCC2F848BD9005F64FD /* HistoryView.swift in Sources */,
+				139AFCCD2F848BD9005F64FD /* HistoryViewData.swift in Sources */,
+				139AFD362F84C82B005F64FD /* PaymentContentCatalog.swift in Sources */,
+				139AFCED2F848E1B005F64FD /* RecordView.swift in Sources */,
+				139AFCCE2F848BD9005F64FD /* PaymentDetailView.swift in Sources */,
+				139AFD2B2F84A287005F64FD /* NotificationManagerSupport.swift in Sources */,
+				139AFD342F84BCC2005F64FD /* AppLimits.swift in Sources */,
+				139AFD032F8496A9005F64FD /* EditPaymentViewData.swift in Sources */,
+				139AFD2D2F84B02F005F64FD /* EntitlementStoreKitSupport.swift in Sources */,
+				139AFCF52F8490AD005F64FD /* ServiceListViewData.swift in Sources */,
+				139AFCCF2F848BD9005F64FD /* HomeView.swift in Sources */,
+				139AFCD02F848BD9005F64FD /* HomeViewData.swift in Sources */,
+				139AFCD22F848BD9005F64FD /* Step1TypeSelectView.swift in Sources */,
+				139AFCD32F848BD9005F64FD /* Step2ServiceSelectView.swift in Sources */,
+				139AFCD42F848BD9005F64FD /* Step3aSubscDetailView.swift in Sources */,
+				139AFD272F84A108005F64FD /* Step1TypeSelectViewData.swift in Sources */,
+				139AFD092F84988D005F64FD /* AddGachaTemplateViewData.swift in Sources */,
+				139AFCD52F848BD9005F64FD /* Step3bGameDetailView.swift in Sources */,
+				139AFCD62F848BD9005F64FD /* RootTabView.swift in Sources */,
+				139AFCFF2F849596005F64FD /* GameChargeDetailViewData.swift in Sources */,
+				139AFCD72F848BD9005F64FD /* AddServiceView.swift in Sources */,
+				139AFD052F849772005F64FD /* PaymentTypeSettingsViewData.swift in Sources */,
+				139AFCD82F848BD9005F64FD /* EditServiceView.swift in Sources */,
+				139AFD0D2F8499E4005F64FD /* ViewDataCommon.swift in Sources */,
+				139AFCD92F848BD9005F64FD /* GameChargeDetailView.swift in Sources */,
+				139AFCDA2F848BD9005F64FD /* ServiceDetailView.swift in Sources */,
+				139AFCDB2F848BD9005F64FD /* ServiceListView.swift in Sources */,
+				139AFD2F2F84B427005F64FD /* ServiceTypeCardCatalog.swift in Sources */,
+				139AFCDC2F848BD9005F64FD /* ServiceManagementHomeView.swift in Sources */,
+				139AFCDD2F848BD9005F64FD /* SubscriptionDetailView.swift in Sources */,
+				139AFCDE2F848BD9005F64FD /* AddGachaTemplateView.swift in Sources */,
+				139AFCDF2F848BD9005F64FD /* GachaTemplateSettingsView.swift in Sources */,
+				139AFCE02F848BD9005F64FD /* PaymentTypeSettingsView.swift in Sources */,
+				139AFCE12F848BD9005F64FD /* SettingsView.swift in Sources */,
+				139AFCF92F84929B005F64FD /* EditServiceViewData.swift in Sources */,
+				139AFD322F84BBBB005F64FD /* MessageCatalog.swift in Sources */,
+				139AFCE22F848BD9005F64FD /* SettingsViewData.swift in Sources */,
+				139AFCE32F848BD9005F64FD /* SubscriptionManagementView.swift in Sources */,
+				139AFCE42F848BD9005F64FD /* ThemeSelectView.swift in Sources */,
+				139AFCE52F848BD9005F64FD /* ActiveSubscriptionsView.swift in Sources */,
+				139AFCE62F848BD9005F64FD /* EditSubscriptionView.swift in Sources */,
+				139AFCE72F848BD9005F64FD /* SubLogApp.swift in Sources */,
+				139AFCEB2F848E02005F64FD /* RecordFlowState.swift in Sources */,
+				139AFCFB2F849321005F64FD /* ServiceDetailViewData.swift in Sources */,
+				139AFD232F849F5A005F64FD /* ActiveSubscriptionsViewData.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
