@@ -10,6 +10,10 @@ struct HomeView: View {
     private let calendar = Calendar.current
     private let cardCornerRadius: CGFloat = 18
 
+    private var dashboardData: HomeDashboardData {
+        HomeDashboardBuilder.make(services: services, calendar: calendar)
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
@@ -38,112 +42,6 @@ struct HomeView: View {
 }
 
 private extension HomeView {
-    struct ActiveSubscriptionItem: Identifiable {
-        let service: Service
-        let subscription: Subscription
-        let nextRenewalDate: Date
-        let daysUntilRenewal: Int
-
-        var id: PersistentIdentifier { subscription.persistentModelID }
-    }
-
-    struct MonthlyExpense: Identifiable {
-        let monthStart: Date
-        let total: Int
-        let isCurrentMonth: Bool
-
-        var id: Date { monthStart }
-    }
-
-    var allPayments: [Payment] {
-        services.flatMap(\.payments)
-    }
-
-    var currentMonthInterval: DateInterval {
-        calendar.dateInterval(of: .month, for: .now) ?? DateInterval(start: .now, duration: 1)
-    }
-
-    var previousMonthInterval: DateInterval {
-        let previousDate = calendar.date(byAdding: .month, value: -1, to: .now) ?? .now
-        return calendar.dateInterval(of: .month, for: previousDate) ?? DateInterval(start: previousDate, duration: 1)
-    }
-
-    var monthlyTotal: Int {
-        allPayments
-            .filter { currentMonthInterval.contains($0.date) }
-            .reduce(0) { $0 + $1.amount }
-    }
-
-    var previousMonthTotal: Int {
-        allPayments
-            .filter { previousMonthInterval.contains($0.date) }
-            .reduce(0) { $0 + $1.amount }
-    }
-
-    var monthComparisonText: String {
-        let difference = monthlyTotal - previousMonthTotal
-
-        if previousMonthTotal == 0 {
-            if monthlyTotal == 0 {
-                return "前月比 ±0円"
-            }
-            return "前月比 +\(difference.formatted(.number.grouping(.automatic)))円"
-        }
-
-        let sign = difference >= 0 ? "+" : "-"
-        return "前月比 \(sign)\(abs(difference).formatted(.number.grouping(.automatic)))円"
-    }
-
-    var recentMonthlyExpenses: [MonthlyExpense] {
-        let currentMonthStart = currentMonthInterval.start
-
-        return (-5...0).compactMap { offset in
-            guard let monthStart = calendar.date(byAdding: .month, value: offset, to: currentMonthStart),
-                  let monthInterval = calendar.dateInterval(of: .month, for: monthStart) else {
-                return nil
-            }
-
-            let total = allPayments
-                .filter { monthInterval.contains($0.date) }
-                .reduce(0) { $0 + $1.amount }
-
-            return MonthlyExpense(
-                monthStart: monthStart,
-                total: total,
-                isCurrentMonth: calendar.isDate(monthStart, equalTo: currentMonthStart, toGranularity: .month)
-            )
-        }
-    }
-
-    var maxMonthlyExpense: Double {
-        max(Double(recentMonthlyExpenses.map(\.total).max() ?? 0), 1)
-    }
-
-    var activeSubscriptions: [ActiveSubscriptionItem] {
-        services
-            .filter { !$0.isArchived }
-            .flatMap { service in
-                service.subscriptions.compactMap { subscription in
-                    guard subscription.isActive else { return nil }
-                    let nextDate = nextRenewalDate(for: subscription)
-                    return ActiveSubscriptionItem(
-                        service: service,
-                        subscription: subscription,
-                        nextRenewalDate: nextDate,
-                        daysUntilRenewal: daysUntilRenewal(for: nextDate)
-                    )
-                }
-            }
-            .sorted { lhs, rhs in
-                if lhs.nextRenewalDate == rhs.nextRenewalDate {
-                    return lhs.service.name < rhs.service.name
-                }
-                return lhs.nextRenewalDate < rhs.nextRenewalDate
-            }
-            .prefix(5)
-            .map { $0 }
-    }
-
     var summaryCard: some View {
         ZStack(alignment: .topTrailing) {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
@@ -166,13 +64,13 @@ private extension HomeView {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(theme.current.primaryDeep.opacity(0.55))
 
-                Text(monthlyTotal, format: .currency(code: "JPY"))
+                Text(dashboardData.monthlyTotal, format: .currency(code: "JPY"))
                     .font(.system(size: 38, weight: .bold, design: .rounded))
                     .foregroundStyle(theme.current.primaryDeep)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
 
-                Text(monthComparisonText)
+                Text(dashboardData.monthComparisonText)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(theme.current.primaryDeep.opacity(0.78))
             }
@@ -226,13 +124,13 @@ private extension HomeView {
                 chartGrid
 
                 HStack(alignment: .bottom, spacing: 12) {
-                    ForEach(recentMonthlyExpenses) { item in
+                    ForEach(dashboardData.recentMonthlyExpenses) { item in
                         VStack(spacing: 4) {
                             RoundedRectangle(cornerRadius: 4, style: .continuous)
                                 .fill(item.isCurrentMonth ? theme.current.primaryDark : theme.current.primary.opacity(0.55))
                                 .frame(height: barHeight(for: item))
 
-                            Text(monthLabel(for: item.monthStart))
+                            Text(item.monthLabel)
                                 .font(.caption.weight(.medium))
                                 .foregroundStyle(.secondary)
                         }
@@ -289,7 +187,7 @@ private extension HomeView {
                     .foregroundStyle(.secondary)
                     .padding(.vertical, 8)
             } else {
-                ForEach(activeSubscriptions) { item in
+                ForEach(dashboardData.activeSubscriptions) { item in
                     NavigationLink {
                         SubscriptionDetailView(subscription: item.subscription, service: item.service)
                     } label: {
@@ -301,20 +199,20 @@ private extension HomeView {
                                     .font(.headline)
                                     .foregroundStyle(Color.black.opacity(0.84))
 
-                                Text("次回更新 \(renewalDateString(item.nextRenewalDate))")
+                                Text("次回更新 \(item.nextRenewalDateText)")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             }
 
                             Spacer()
 
-                            subscriptionBadge(for: item.daysUntilRenewal)
+                            subscriptionBadge(for: item)
                         }
                         .padding(.vertical, 4)
                     }
                     .buttonStyle(.plain)
 
-                    if item.id != activeSubscriptions.last?.id {
+                    if item.id != dashboardData.activeSubscriptions.last?.id {
                         Divider()
                     }
                 }
@@ -324,76 +222,23 @@ private extension HomeView {
         .cardSurface(cornerRadius: cardCornerRadius)
     }
 
-    func barHeight(for item: MonthlyExpense) -> CGFloat {
-        let ratio = Double(item.total) / maxMonthlyExpense
+    var activeSubscriptions: [HomeActiveSubscriptionItem] {
+        dashboardData.activeSubscriptions
+    }
+
+    func barHeight(for item: HomeMonthlyExpense) -> CGFloat {
+        let ratio = Double(item.total) / dashboardData.maxMonthlyExpense
         return max(CGFloat(ratio) * 44, item.total > 0 ? 8 : 3)
     }
 
-    func monthLabel(for date: Date) -> String {
-        "\(calendar.component(.month, from: date))月"
-    }
-
-    func renewalDateString(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP")
-        formatter.dateFormat = "yyyy/MM/dd"
-        return formatter.string(from: date)
-    }
-
-    func subscriptionBadge(for daysUntilRenewal: Int) -> some View {
-        Text(badgeTitle(for: daysUntilRenewal))
+    func subscriptionBadge(for item: HomeActiveSubscriptionItem) -> some View {
+        Text(item.badgeTitle)
             .font(.caption.weight(.bold))
-            .foregroundStyle(badgeForeground(for: daysUntilRenewal))
+            .foregroundStyle(item.badgeForegroundColor)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background(badgeBackground(for: daysUntilRenewal))
+            .background(item.badgeBackgroundColor)
             .clipShape(Capsule())
-    }
-
-    func badgeTitle(for daysUntilRenewal: Int) -> String {
-        if daysUntilRenewal <= 0 {
-            return "今日"
-        }
-        return "あと\(daysUntilRenewal)日"
-    }
-
-    func badgeBackground(for daysUntilRenewal: Int) -> Color {
-        if daysUntilRenewal <= 3 {
-            return Color(red: 1.0, green: 0.91, blue: 0.91)
-        } else if daysUntilRenewal <= 10 {
-            return Color(red: 1.0, green: 0.94, blue: 0.86)
-        } else {
-            return Color(red: 0.95, green: 0.95, blue: 0.97)
-        }
-    }
-
-    func badgeForeground(for daysUntilRenewal: Int) -> Color {
-        if daysUntilRenewal <= 3 {
-            return Color(red: 0.82, green: 0.28, blue: 0.28)
-        } else if daysUntilRenewal <= 10 {
-            return Color(red: 0.82, green: 0.49, blue: 0.12)
-        } else {
-            return Color(red: 0.43, green: 0.45, blue: 0.52)
-        }
-    }
-
-    func nextRenewalDate(for subscription: Subscription) -> Date {
-        let component = subscription.renewalInterval.unit.calendarComponent
-        var candidate = subscription.startDate
-
-        while candidate < .now {
-            candidate = calendar.date(
-                byAdding: component,
-                value: subscription.renewalInterval.value,
-                to: candidate
-            ) ?? candidate
-        }
-
-        return candidate
-    }
-
-    func daysUntilRenewal(for nextRenewalDate: Date) -> Int {
-        calendar.dateComponents([.day], from: .now, to: nextRenewalDate).day ?? 0
     }
 }
 

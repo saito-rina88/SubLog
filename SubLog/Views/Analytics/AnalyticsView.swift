@@ -1,7 +1,6 @@
 import Charts
 import SwiftData
 import SwiftUI
-import UIKit
 
 struct AnalyticsView: View {
     enum Period: String, CaseIterable, Identifiable {
@@ -52,6 +51,16 @@ struct AnalyticsView: View {
     @State private var showMonthPicker = false
     @State private var showYearPicker = false
 
+    private var analyticsData: AnalyticsViewData {
+        AnalyticsViewDataBuilder.make(
+            services: services,
+            period: selectedPeriod,
+            selectedMonthDate: selectedMonthDate,
+            selectedYear: selectedYear,
+            theme: theme.current
+        )
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -72,7 +81,7 @@ struct AnalyticsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .tint(theme.current.primary)
             .sheet(isPresented: $showFullRanking) {
-                AnalyticsRankingListView(rankings: allServiceRankings, summaryScope: detailSummaryScope)
+                AnalyticsRankingListView(rankings: analyticsData.allServiceRankings, summaryScope: detailSummaryScope)
                     .environmentObject(theme)
             }
             .sheet(isPresented: $showMonthPicker) {
@@ -90,320 +99,12 @@ struct AnalyticsView: View {
 }
 
 private extension AnalyticsView {
-    var allPayments: [Payment] {
-        services
-            .flatMap(\.payments)
-            .sorted { $0.date > $1.date }
-    }
-
-    var periodFilteredPayments: [Payment] {
-        let calendar = Calendar.current
-
-        switch selectedPeriod {
-        case .thisMonth:
-            let interval = calendar.dateInterval(of: .month, for: selectedMonthDate) ?? DateInterval(start: selectedMonthDate, duration: 1)
-            return allPayments.filter { interval.contains($0.date) }
-        case .thisYear:
-            let yearDate = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1)) ?? .now
-            let interval = calendar.dateInterval(of: .year, for: yearDate) ?? DateInterval(start: yearDate, duration: 1)
-            return allPayments.filter { interval.contains($0.date) }
-        }
-    }
-
-    var currentMonth: Date {
-        Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: .now)) ?? .now
-    }
-
-    var chartTitle: String {
-        switch selectedPeriod {
-        case .thisMonth:
-            return selectedMonthTitle
-        case .thisYear:
-            return "\(String(selectedYear))年"
-        }
-    }
-
-    var selectedMonthTotal: Int {
-        periodFilteredPayments.reduce(0) { $0 + $1.amount }
-    }
-
-    var previousMonthTotal: Int {
-        let calendar = Calendar.current
-        guard let previousMonth = calendar.date(byAdding: .month, value: -1, to: selectedMonthDate) else {
-            return 0
-        }
-        let interval = calendar.dateInterval(of: .month, for: previousMonth) ?? DateInterval(start: previousMonth, duration: 1)
-        return allPayments
-            .filter { interval.contains($0.date) }
-            .reduce(0) { $0 + $1.amount }
-    }
-
-    var selectedYearTotal: Int {
-        periodFilteredPayments.reduce(0) { $0 + $1.amount }
-    }
-
-    var selectedPeriodTotal: Int {
-        switch selectedPeriod {
-        case .thisMonth:
-            return selectedMonthTotal
-        case .thisYear:
-            return selectedYearTotal
-        }
-    }
-
-    var previousYearTotal: Int {
-        let calendar = Calendar.current
-        let previousYearDate = calendar.date(from: DateComponents(year: selectedYear - 1, month: 1, day: 1)) ?? .now
-        let interval = calendar.dateInterval(of: .year, for: previousYearDate) ?? DateInterval(start: previousYearDate, duration: 1)
-        return allPayments
-            .filter { interval.contains($0.date) }
-            .reduce(0) { $0 + $1.amount }
-    }
-
-    var monthOverMonthText: String {
-        let delta = selectedMonthTotal - previousMonthTotal
-
-        if previousMonthTotal == 0 {
-            if selectedMonthTotal == 0 {
-                return "前月比 ±¥0"
-            }
-            return "前月比 +¥\(selectedMonthTotal.formatted())"
-        }
-
-        let ratio = Double(delta) / Double(previousMonthTotal)
-        let sign = delta >= 0 ? "+" : "-"
-        let percent = abs(ratio) * 100
-        return "前月比 \(sign)¥\(abs(delta).formatted()) (\(percent.formatted(.number.precision(.fractionLength(1))))%)"
-    }
-
-    var yearOverYearText: String {
-        let delta = selectedYearTotal - previousYearTotal
-
-        if previousYearTotal == 0 {
-            if selectedYearTotal == 0 {
-                return "前年比 ±¥0"
-            }
-            return "前年比 +¥\(selectedYearTotal.formatted())"
-        }
-
-        let ratio = Double(delta) / Double(previousYearTotal)
-        let sign = delta >= 0 ? "+" : "-"
-        let percent = abs(ratio) * 100
-        return "前年比 \(sign)¥\(abs(delta).formatted()) (\(percent.formatted(.number.precision(.fractionLength(1))))%)"
-    }
-
-    var selectedMonthTitle: String {
-        monthOptionTitle(for: selectedMonthDate)
-    }
-
-    var chartServiceSummaries: [ServiceSummary] {
-        let totals = Dictionary(grouping: periodFilteredPayments, by: \.service.persistentModelID)
-            .compactMap { _, payments -> ServiceSummary? in
-                guard let service = payments.first?.service else { return nil }
-                let total = payments.reduce(0) { $0 + $1.amount }
-                guard total > 0 else { return nil }
-                return ServiceSummary(service: service, total: total)
-            }
-            .sorted { lhs, rhs in
-                if lhs.total == rhs.total {
-                    return lhs.service.name < rhs.service.name
-                }
-                return lhs.total > rhs.total
-            }
-
-        return totals
-    }
-
-    var chartDisplaySummaries: [ChartSegmentSummary] {
-        makeChartDisplaySummaries(from: chartServiceSummaries)
-    }
-
-    var serviceColorMap: [PersistentIdentifier: Color] {
-        let orderedServices = services.sorted { lhs, rhs in
-            lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
-        }
-        let palette = chartPalette(for: theme.current, count: orderedServices.count)
-
-        return Dictionary(uniqueKeysWithValues: orderedServices.enumerated().map { index, service in
-            (service.persistentModelID, palette[index])
-        })
-    }
-
-    func color(for service: Service) -> Color {
-        serviceColorMap[service.persistentModelID] ?? theme.current.primary
-    }
-
-    var otherSegmentColor: Color {
-        let components = theme.current.primaryLight.hsbComponents
-        return Color(
-            hue: components.hue,
-            saturation: max(components.saturation * 0.18, 0.04),
-            brightness: min(max(components.brightness * 0.94, 0.78), 0.92)
-        )
-        .opacity(0.72)
-    }
-
-    func color(for segment: ChartSegmentSummary) -> Color {
-        if segment.isOther {
-            return otherSegmentColor
-        }
-
-        guard let service = segment.service else {
-            return theme.current.primary
-        }
-
-        return color(for: service)
-    }
-
-    // Keep the palette anchored to the current theme while softening saturation
-    // and gradually lightening lower-ranked segments for a calmer overall tone.
-    func chartPalette(for theme: AppTheme, count: Int) -> [Color] {
-        guard count > 0 else { return [] }
-
-        let baseComponents = theme.primary.hsbComponents
-        let secondaryComponents = theme.primaryDark.hsbComponents
-        let baseHue = baseComponents.hue
-        let baseSaturation = min(max(baseComponents.saturation * 0.78, secondaryComponents.saturation * 0.72), 0.72)
-        let baseBrightness = min(max(baseComponents.brightness * 1.04, secondaryComponents.brightness * 1.08), 0.9)
-
-        return (0..<count).map { index in
-            if index == 0 {
-                return Color(
-                    hue: baseHue,
-                    saturation: min(max(baseSaturation * 1.04, 0.58), 0.7),
-                    brightness: min(max(baseBrightness * 0.98, 0.8), 0.88)
-                )
-            }
-
-            let step = (index + 1) / 2
-            let direction = index.isMultiple(of: 2) ? 1.0 : -1.0
-            let hueStride = min(0.03 * Double(step), 0.14)
-            let hue = normalizedHue(baseHue + (direction * hueStride))
-
-            let saturationDrop = 0.028 * Double(index)
-            let saturationLift = 0.008 * Double((index - 1) % 2)
-            let saturation = min(
-                max(baseSaturation - saturationDrop + saturationLift, 0.34),
-                0.64
-            )
-
-            let brightnessLift = 0.022 * Double(index)
-            let brightnessDrop = 0.01 * Double(index / 4)
-            let brightness = min(
-                max(baseBrightness + brightnessLift - brightnessDrop, 0.8),
-                0.94
-            )
-
-            return Color(hue: hue, saturation: saturation, brightness: brightness)
-        }
-    }
-
-    func normalizedHue(_ value: Double) -> Double {
-        let remainder = value.truncatingRemainder(dividingBy: 1)
-        return remainder >= 0 ? remainder : remainder + 1
-    }
-
-    func makeChartDisplaySummaries(from summaries: [ServiceSummary]) -> [ChartSegmentSummary] {
-        guard summaries.count > 5 else {
-            return summaries.map { item in
-                ChartSegmentSummary(
-                    id: String(describing: item.id),
-                    label: item.service.name,
-                    total: item.total,
-                    service: item.service,
-                    isOther: false
-                )
-            }
-        }
-
-        let topFive = summaries.prefix(5).map { item in
-            ChartSegmentSummary(
-                id: String(describing: item.id),
-                label: item.service.name,
-                total: item.total,
-                service: item.service,
-                isOther: false
-            )
-        }
-        let otherTotal = summaries.dropFirst(5).reduce(0) { $0 + $1.total }
-
-        guard otherTotal > 0 else { return topFive }
-
-        return topFive + [
-            ChartSegmentSummary(
-                id: "other",
-                label: "その他",
-                total: otherTotal,
-                service: nil,
-                isOther: true
-            )
-        ]
-    }
-
-    var allServiceRankings: [ServiceSummary] {
-        let totalsByServiceID = Dictionary(grouping: periodFilteredPayments, by: \.service.persistentModelID)
-
-        return services
-            .compactMap { service -> ServiceSummary? in
-                let total = totalsByServiceID[service.persistentModelID, default: []].reduce(0) { $0 + $1.amount }
-                guard total > 0 else { return nil }
-                return ServiceSummary(service: service, total: total)
-            }
-            .sorted { lhs, rhs in
-                if lhs.total == rhs.total {
-                    return lhs.service.name < rhs.service.name
-                }
-                return lhs.total > rhs.total
-            }
-    }
-
-    var topFiveRankings: [ServiceSummary] {
-        Array(allServiceRankings.prefix(5))
-    }
-
     var detailSummaryScope: ServiceDetailView.SummaryScope {
         switch selectedPeriod {
         case .thisMonth:
             return .analyticsMonth(selectedMonthDate)
         case .thisYear:
             return .analyticsYear(selectedYear)
-        }
-    }
-
-    var maxRankingTotal: Int {
-        max(topFiveRankings.map(\.total).max() ?? 0, 1)
-    }
-
-    var monthlyTrendData: [MonthlyTotal] {
-        let calendar = Calendar.current
-        switch selectedPeriod {
-        case .thisMonth:
-            let interval = calendar.dateInterval(of: .month, for: selectedMonthDate) ?? DateInterval(start: selectedMonthDate, duration: 1)
-            let payments = periodFilteredPayments
-            let weekStarts = stride(from: 0, to: 5, by: 1).compactMap { offset in
-                calendar.date(byAdding: .weekOfMonth, value: offset, to: interval.start)
-            }
-
-            return weekStarts.map { weekStart in
-                let weekEnd = calendar.date(byAdding: .day, value: 7, to: weekStart) ?? weekStart
-                let total = payments
-                    .filter { $0.date >= weekStart && $0.date < weekEnd }
-                    .reduce(0) { $0 + $1.amount }
-                return MonthlyTotal(monthStart: weekStart, total: total)
-            }
-        case .thisYear:
-            let yearStart = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1)) ?? currentMonth
-            let months = (0..<12).compactMap { offset in
-                calendar.date(byAdding: .month, value: offset, to: yearStart)
-            }
-
-            return months.map { month in
-                let interval = calendar.dateInterval(of: .month, for: month) ?? DateInterval(start: month, duration: 1)
-                let total = periodFilteredPayments
-                    .filter { interval.contains($0.date) }
-                    .reduce(0) { $0 + $1.amount }
-                return MonthlyTotal(monthStart: month, total: total)
-            }
         }
     }
 
@@ -432,7 +133,7 @@ private extension AnalyticsView {
                         Button {
                             showMonthPicker = true
                         } label: {
-                            Text(selectedMonthTitle)
+                            Text(monthOptionTitle(for: selectedMonthDate))
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(.secondary)
                         }
@@ -486,33 +187,27 @@ private extension AnalyticsView {
     var monthlyServiceChartCard: some View {
         card {
             VStack(alignment: .leading, spacing: 14) {
-                Text(chartTitle)
+                Text(analyticsData.chartTitle)
                     .font(.headline)
 
-                if selectedPeriod == .thisMonth {
-                    Text(monthOverMonthText)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(previousMonthTotal <= selectedMonthTotal ? theme.current.primary : .secondary)
-                } else {
-                    Text(yearOverYearText)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(previousYearTotal <= selectedYearTotal ? theme.current.primary : .secondary)
-                }
+                Text(analyticsData.comparisonText)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(analyticsData.isComparisonPositive ? theme.current.primary : .secondary)
 
-                if chartDisplaySummaries.isEmpty {
+                if analyticsData.chartDisplaySummaries.isEmpty {
                     Text("この期間の支払いデータはありません。")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 } else {
                     VStack(spacing: 12) {
                         ZStack {
-                            Chart(chartDisplaySummaries) { item in
+                            Chart(analyticsData.chartDisplaySummaries) { item in
                                 SectorMark(
                                     angle: .value("支払額", item.total),
                                     innerRadius: .ratio(0.58),
                                     angularInset: 2
                                 )
-                                .foregroundStyle(color(for: item))
+                                .foregroundStyle(analyticsData.color(for: item, fallback: theme.current.primary))
                             }
                             .frame(height: 240)
 
@@ -520,16 +215,16 @@ private extension AnalyticsView {
                                 Text("合計")
                                     .font(.caption.weight(.semibold))
                                     .foregroundStyle(.secondary)
-                                Text(selectedPeriodTotal, format: .currency(code: "JPY"))
+                                Text(analyticsData.selectedPeriodTotal, format: .currency(code: "JPY"))
                                     .font(.headline.weight(.bold))
                                     .foregroundStyle(theme.current.primaryDeep)
                             }
                         }
 
-                        ForEach(chartDisplaySummaries) { item in
+                        ForEach(analyticsData.chartDisplaySummaries) { item in
                             HStack(spacing: 10) {
                                 Circle()
-                                    .fill(color(for: item))
+                                    .fill(analyticsData.color(for: item, fallback: theme.current.primary))
                                     .frame(width: 10, height: 10)
 
                                 Text(item.label)
@@ -562,12 +257,12 @@ private extension AnalyticsView {
                     .font(.subheadline.weight(.semibold))
                 }
 
-                if topFiveRankings.isEmpty {
+                if analyticsData.topFiveRankings.isEmpty {
                     Text("ランキング表示に必要な支払いデータがありません。")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(Array(topFiveRankings.enumerated()), id: \.element.id) { index, item in
+                    ForEach(Array(analyticsData.topFiveRankings.enumerated()), id: \.element.id) { index, item in
                         NavigationLink {
                             ServiceDetailView(service: item.service, summaryScope: detailSummaryScope)
                                 .environmentObject(theme)
@@ -582,7 +277,7 @@ private extension AnalyticsView {
                                         .foregroundStyle(.primary)
 
                                     GeometryReader { proxy in
-                                        let width = proxy.size.width * CGFloat(item.total) / CGFloat(maxRankingTotal)
+                                        let width = proxy.size.width * CGFloat(item.total) / CGFloat(analyticsData.maxRankingTotal)
 
                                         ZStack(alignment: .leading) {
                                             Capsule()
@@ -616,12 +311,12 @@ private extension AnalyticsView {
                 Text("推移グラフ")
                     .font(.headline)
 
-                if monthlyTrendData.allSatisfy({ $0.total == 0 }) {
+                if analyticsData.monthlyTrendData.allSatisfy({ $0.total == 0 }) {
                     Text("推移グラフに必要な支払いデータがありません。")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 } else {
-                    Chart(monthlyTrendData) { item in
+                    Chart(analyticsData.monthlyTrendData) { item in
                         AreaMark(
                             x: .value("期間", item.monthStart),
                             y: .value("支払額", item.total)
@@ -656,7 +351,7 @@ private extension AnalyticsView {
                     }
 
                     HStack {
-                        Text(trendCaption)
+                        Text(analyticsData.trendCaption)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         Spacer()
@@ -696,19 +391,10 @@ private extension AnalyticsView {
         case .thisMonth:
             formatter.dateFormat = "M/d"
         case .thisYear:
-            formatter.dateFormat = "M月"
+            formatter.dateFormat = "yyyy年"
         }
 
         return formatter.string(from: date)
-    }
-
-    var trendCaption: String {
-        switch selectedPeriod {
-        case .thisMonth:
-            return "今月の週別支払額推移"
-        case .thisYear:
-            return "\(String(selectedYear))年の月別支払額推移"
-        }
     }
 
     func moveMonth(by offset: Int) {
@@ -726,28 +412,6 @@ private extension AnalyticsView {
     }
 
 }
-
-private extension Color {
-    var hsbComponents: (hue: Double, saturation: Double, brightness: Double) {
-        let uiColor = UIColor(self)
-        var hue: CGFloat = 0
-        var saturation: CGFloat = 0
-        var brightness: CGFloat = 0
-        var alpha: CGFloat = 0
-
-        if uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
-            return (Double(hue), Double(saturation), Double(brightness))
-        }
-
-        var white: CGFloat = 0
-        if uiColor.getWhite(&white, alpha: &alpha) {
-            return (0, 0, Double(white))
-        }
-
-        return (0, 0, 0.5)
-    }
-}
-
 private struct AnalyticsMonthPickerSheet: View {
     @Binding var selectedMonthDate: Date
 

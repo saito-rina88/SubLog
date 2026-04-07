@@ -2,38 +2,28 @@ import SwiftUI
 import SwiftData
 
 struct HistoryView: View {
-    enum FilterType: String, CaseIterable, Identifiable {
-        case all = "すべて"
-        case subscription = "定期"
-        case game = "単発"
-
-        var id: Self { self }
-    }
-
-    enum SortOrder {
-        case newestFirst
-        case oldestFirst
-    }
-
-    struct PaymentWithService: Identifiable {
-        let payment: Payment
-        let service: Service
-
-        var id: PersistentIdentifier { payment.persistentModelID }
-    }
-
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var theme: ThemeManager
     @Query private var services: [Service]
 
     @State private var searchText = ""
-    @State private var selectedFilter: FilterType = .all
+    @State private var selectedFilter: HistoryFilterType = .all
     @State private var selectedTabIndex: Int = 0
-    @State private var sortOrder: SortOrder = .newestFirst
+    @State private var sortOrder: HistorySortOrder = .newestFirst
     @State private var selectedMonth = Calendar.current.dateInterval(of: .month, for: .now)?.start ?? .now
     @State private var showListMonthPicker = false
     @State private var paymentToEdit: Payment?
     @State private var paymentToDelete: Payment?
+
+    private var listData: HistoryListData {
+        HistoryListDataBuilder.make(
+            services: services,
+            searchText: searchText,
+            selectedFilter: selectedFilter,
+            selectedMonth: selectedMonth,
+            sortOrder: sortOrder
+        )
+    }
 
     var body: some View {
         NavigationStack {
@@ -87,12 +77,6 @@ struct HistoryView: View {
 }
 
 private extension HistoryView {
-    struct MonthSection {
-        let monthStart: Date
-        let items: [PaymentWithService]
-        let total: Int
-    }
-
     var tabPicker: some View {
         Picker("", selection: $selectedTabIndex) {
             Text("一覧").tag(0)
@@ -154,7 +138,7 @@ private extension HistoryView {
 
     var listSections: some View {
         List {
-            if groupedByMonth.isEmpty {
+            if listData.groupedByMonth.isEmpty {
                 Section {
                     Text("該当する履歴はありません。")
                         .font(.subheadline)
@@ -162,7 +146,7 @@ private extension HistoryView {
                         .padding(.vertical, 8)
                 }
             } else {
-                ForEach(Array(groupedByMonth.enumerated()), id: \.element.monthStart) { index, section in
+                ForEach(Array(listData.groupedByMonth.enumerated()), id: \.element.monthStart) { index, section in
                     Section {
                         ForEach(section.items) { item in
                             NavigationLink {
@@ -178,7 +162,7 @@ private extension HistoryView {
                             }
                         }
 
-                        if index == groupedByMonth.count - 1 {
+                        if index == listData.groupedByMonth.count - 1 {
                             monthTotalSummary
                                 .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
                                 .listRowBackground(
@@ -205,92 +189,14 @@ private extension HistoryView {
     @ViewBuilder
     var calendarContent: some View {
         HistoryCalendarView(
-            payments: allPaymentsWithService,
+            payments: listData.allPayments,
             destination: { item in AnyView(destination(for: item)) }
         )
     }
 
-    var allPaymentsWithService: [PaymentWithService] {
-        services
-            .flatMap { service in
-                service.payments.map { PaymentWithService(payment: $0, service: service) }
-            }
-            .sorted { lhs, rhs in
-                if lhs.payment.date == rhs.payment.date {
-                    return lhs.service.name < rhs.service.name
-                }
-                return lhs.payment.date > rhs.payment.date
-            }
-    }
-
-    var filteredPaymentsBase: [PaymentWithService] {
-        allPaymentsWithService.filter { item in
-            if !matchesFilter(item.service.serviceType) {
-                return false
-            }
-
-            guard !searchText.isEmpty else {
-                return true
-            }
-
-            let serviceHit = item.service.name.localizedCaseInsensitiveContains(searchText)
-            let itemNameHit = item.payment.itemName?.localizedCaseInsensitiveContains(searchText) ?? false
-            let memoHit = item.payment.memo?.localizedCaseInsensitiveContains(searchText) ?? false
-
-            return serviceHit || itemNameHit || memoHit
-        }
-    }
-
-    var filteredPayments: [PaymentWithService] {
-        filteredPaymentsBase.filter {
-            let monthStart = calendar.dateInterval(of: .month, for: $0.payment.date)?.start ?? $0.payment.date
-            return calendar.isDate(monthStart, equalTo: selectedMonth, toGranularity: .month)
-        }
-    }
-
-    var availableMonths: [Date] {
-        Array(
-            Set(
-                filteredPaymentsBase.map {
-                    calendar.dateInterval(of: .month, for: $0.payment.date)?.start ?? $0.payment.date
-                }
-            )
-        )
-        .sorted(by: >)
-    }
-
-    var groupedByMonth: [MonthSection] {
-        let grouped = Dictionary(grouping: filteredPayments) { item in
-            calendar.dateInterval(of: .month, for: item.payment.date)?.start ?? item.payment.date
-        }
-
-        return grouped
-            .map { monthStart, items in
-                MonthSection(
-                    monthStart: monthStart,
-                    items: items.sorted { lhs, rhs in
-                        if lhs.payment.date == rhs.payment.date {
-                            return sortOrder == .newestFirst
-                                ? lhs.service.name < rhs.service.name
-                                : lhs.service.name > rhs.service.name
-                        }
-                        return sortOrder == .newestFirst
-                            ? lhs.payment.date > rhs.payment.date
-                            : lhs.payment.date < rhs.payment.date
-                    },
-                    total: items.reduce(0) { $0 + $1.payment.amount }
-                )
-            }
-            .sorted {
-                sortOrder == .newestFirst
-                    ? $0.monthStart > $1.monthStart
-                    : $0.monthStart < $1.monthStart
-            }
-    }
-
     var filterChips: some View {
         HStack(spacing: 10) {
-            ForEach(FilterType.allCases) { filter in
+            ForEach(HistoryFilterType.allCases) { filter in
                 Button {
                     selectedFilter = filter
                 } label: {
@@ -393,29 +299,14 @@ private extension HistoryView {
     }
 
     var currentMonthTotal: Int {
-        filteredPayments.reduce(0) { $0 + $1.payment.amount }
+        listData.currentMonthTotal
     }
 
     var currentMonthTotalText: String {
-        let digits = String(abs(currentMonthTotal))
-        let reversedDigits = digits.reversed()
-        var amountText = ""
-
-        for (index, digit) in reversedDigits.enumerated() {
-            if index > 0, index.isMultiple(of: 3) {
-                amountText.insert(",", at: amountText.startIndex)
-            }
-            amountText.insert(digit, at: amountText.startIndex)
-        }
-
-        if currentMonthTotal < 0 {
-            amountText.insert("-", at: amountText.startIndex)
-        }
-
-        return "¥\(amountText)"
+        listData.currentMonthTotalText
     }
 
-    func historyRow(_ item: PaymentWithService) -> some View {
+    func historyRow(_ item: HistoryPaymentWithService) -> some View {
         HStack(spacing: 12) {
             ServiceIconView(service: item.service, size: 44)
 
@@ -442,7 +333,7 @@ private extension HistoryView {
     }
 
     @ViewBuilder
-    func destination(for item: PaymentWithService) -> some View {
+    func destination(for item: HistoryPaymentWithService) -> some View {
         switch item.service.serviceType {
         case .game:
             GameChargeDetailView(payment: item.payment)
@@ -452,17 +343,6 @@ private extension HistoryView {
             } else {
                 GameChargeDetailView(payment: item.payment)
             }
-        }
-    }
-
-    func matchesFilter(_ serviceType: ServiceType) -> Bool {
-        switch selectedFilter {
-        case .all:
-            return true
-        case .game:
-            return serviceType == .game
-        case .subscription:
-            return serviceType == .subscription
         }
     }
 
@@ -507,14 +387,12 @@ private extension HistoryView {
     }
 
     var selectedMonthIndex: Int? {
-        availableMonths.firstIndex {
-            calendar.isDate($0, equalTo: selectedMonth, toGranularity: .month)
-        }
+        listData.selectedMonthIndex(for: selectedMonth, calendar: calendar)
     }
 
     var canMoveToPreviousMonth: Bool {
         guard let selectedMonthIndex else { return false }
-        return selectedMonthIndex < availableMonths.count - 1
+        return selectedMonthIndex < listData.availableMonths.count - 1
     }
 
     var canMoveToNextMonth: Bool {
@@ -523,36 +401,25 @@ private extension HistoryView {
     }
 
     func moveToPreviousMonth() {
-        guard let selectedMonthIndex else { return }
-        let nextIndex = selectedMonthIndex + 1
-        guard availableMonths.indices.contains(nextIndex) else { return }
-        selectedMonth = availableMonths[nextIndex]
+        guard let previousMonth = listData.month(before: selectedMonth, calendar: calendar) else { return }
+        selectedMonth = previousMonth
     }
 
     func moveToNextMonth() {
-        guard let selectedMonthIndex else { return }
-        let nextIndex = selectedMonthIndex - 1
-        guard availableMonths.indices.contains(nextIndex) else { return }
-        selectedMonth = availableMonths[nextIndex]
+        guard let nextMonth = listData.month(after: selectedMonth, calendar: calendar) else { return }
+        selectedMonth = nextMonth
     }
 
     func syncSelectedMonth() {
-        guard !availableMonths.isEmpty else {
-            selectedMonth = calendar.dateInterval(of: .month, for: .now)?.start ?? .now
-            return
-        }
-
-        if !availableMonths.contains(where: { calendar.isDate($0, equalTo: selectedMonth, toGranularity: .month) }) {
-            selectedMonth = availableMonths[0]
-        }
+        selectedMonth = listData.syncedMonth(from: selectedMonth, calendar: calendar)
     }
 }
 
 private struct HistoryCalendarView: View {
     @EnvironmentObject private var theme: ThemeManager
 
-    let payments: [HistoryView.PaymentWithService]
-    let destination: (HistoryView.PaymentWithService) -> AnyView
+    let payments: [HistoryPaymentWithService]
+    let destination: (HistoryPaymentWithService) -> AnyView
 
     @State private var calendarMonth: Date = .now
     @State private var selectedDate: Date? = .now
@@ -796,7 +663,7 @@ private extension HistoryCalendarView {
         }
     }
 
-    func payments(for date: Date) -> [HistoryView.PaymentWithService] {
+    func payments(for date: Date) -> [HistoryPaymentWithService] {
         payments.filter { calendar.isDate($0.payment.date, inSameDayAs: date) }
     }
 
