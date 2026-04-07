@@ -9,7 +9,6 @@ struct Step3aSubscDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var theme: ThemeManager
-    @EnvironmentObject private var entitlement: EntitlementManager
     @EnvironmentObject private var notificationManager: NotificationManager
 
     @State private var amount: String = ""
@@ -25,6 +24,17 @@ struct Step3aSubscDetailView: View {
     @State private var renewalUnit: RenewalIntervalUnit = .month
     @State private var isEditingRenewalValue = false
     @FocusState private var isRenewalValueFocused: Bool
+
+    private var viewData: Step3aSubscDetailViewData {
+        Step3aSubscDetailViewDataBuilder.build(
+            allServices: allServices,
+            serviceID: serviceID,
+            amountText: amount,
+            renewalValueText: renewalValueText,
+            renewalUnit: renewalUnit,
+            reminderDaysBefore: reminderDaysBefore
+        )
+    }
 
     var body: some View {
         Form {
@@ -53,7 +63,7 @@ struct Step3aSubscDetailView: View {
                     showRenewalIntervalEditor = true
                 } label: {
                     HStack {
-                        Text(activeSubscription?.renewalInterval.displayText ?? RenewalInterval(value: normalizedRenewalValue, unit: renewalUnit).displayText)
+                        Text(viewData.renewalDisplayText)
                             .foregroundStyle(.primary)
                         Spacer()
                         Image(systemName: "chevron.right")
@@ -124,7 +134,7 @@ struct Step3aSubscDetailView: View {
                         Image(systemName: "info.circle")
                             .foregroundStyle(.secondary)
                             .font(.caption)
-                        Text("\(reminderDaysBefore)日前と当日に通知します")
+                        Text(viewData.reminderSummaryText)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -139,7 +149,7 @@ struct Step3aSubscDetailView: View {
                 .frame(maxWidth: .infinity)
                 .foregroundStyle(.white)
                 .listRowBackground(theme.current.primary)
-                .disabled(amountValue <= 0 || service == nil)
+                .disabled(!viewData.canSave)
             }
         }
         .padding(.top, -60)
@@ -170,22 +180,19 @@ struct Step3aSubscDetailView: View {
 
 private extension Step3aSubscDetailView {
     var service: Service? {
-        allServices.first { $0.persistentModelID == serviceID }
+        viewData.service
     }
 
     var activeSubscription: Subscription? {
-        service?.subscriptions.first(where: { $0.isActive })
+        viewData.activeSubscription
     }
 
     var amountValue: Int {
-        Int(amount) ?? 0
+        viewData.amountValue
     }
 
     var mondayFirstCalendar: Calendar {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.locale = Locale(identifier: "ja_JP")
-        calendar.firstWeekday = 2
-        return calendar
+        Step3aSubscDetailViewDataBuilder.mondayFirstCalendar
     }
 
     var renewalValue: Int {
@@ -194,7 +201,7 @@ private extension Step3aSubscDetailView {
     }
 
     var normalizedRenewalValue: Int {
-        max(Int(renewalValueText.trimmingCharacters(in: .whitespacesAndNewlines)) ?? 1, 1)
+        Step3aSubscDetailViewDataBuilder.normalizedRenewalValue(from: renewalValueText)
     }
 
     var renewalIntervalSheet: some View {
@@ -345,16 +352,7 @@ private extension Step3aSubscDetailView {
     }
 
     func billingType(for renewalInterval: RenewalInterval) -> BillingType {
-        switch (renewalInterval.value, renewalInterval.unit) {
-        case (7, .day), (1, .week):
-            return .weekly
-        case (1, .month):
-            return .monthly
-        case (1, .year):
-            return .annual
-        default:
-            return .seasonal
-        }
+        Step3aSubscDetailViewDataBuilder.billingType(for: renewalInterval)
     }
 
     func save() {

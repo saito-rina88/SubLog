@@ -24,6 +24,15 @@ struct Step2ServiceSelectView: View {
     private let sectionText = Color(red: 142 / 255, green: 142 / 255, blue: 147 / 255)
     private let searchTint = Color(red: 121 / 255, green: 130 / 255, blue: 162 / 255).opacity(0.7)
 
+    private var viewData: Step2ServiceSelectViewData {
+        Step2ServiceSelectViewDataBuilder.build(
+            allServices: allServices,
+            serviceType: serviceType,
+            searchText: searchText,
+            isPremium: entitlements.isPremium
+        )
+    }
+
     var body: some View {
         content
         .background(
@@ -90,7 +99,7 @@ private extension Step2ServiceSelectView {
             headerAndActions
 
             VStack(spacing: 16) {
-                ForEach(filteredServices) { service in
+                ForEach(viewData.filteredServices) { service in
                     serviceCard(service)
                 }
             }
@@ -104,7 +113,7 @@ private extension Step2ServiceSelectView {
             headerAndActions
 
             List {
-                ForEach(filteredServices) { service in
+                ForEach(viewData.filteredServices) { service in
                     serviceCard(service)
                         .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
                         .listRowBackground(Color.clear)
@@ -157,20 +166,6 @@ private extension Step2ServiceSelectView {
                 }
             }
         )
-    }
-
-    var filteredServices: [Service] {
-        allServices
-            .filter { $0.serviceType == serviceType && !$0.isArchived }
-            .filter {
-                searchText.isEmpty || $0.name.localizedCaseInsensitiveContains(searchText)
-            }
-            .sorted { lhs, rhs in
-                if lhs.sortOrder == rhs.sortOrder {
-                    return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
-                }
-                return lhs.sortOrder < rhs.sortOrder
-            }
     }
 
     var searchBar: some View {
@@ -277,7 +272,7 @@ private extension Step2ServiceSelectView {
 
     var addServiceButton: some View {
         Button {
-            if entitlements.canAddService(currentCount: allServices.filter { !$0.isArchived }.count) {
+            if viewData.canAddService {
                 showAddService = true
             } else {
                 showPremiumSheet = true
@@ -303,10 +298,6 @@ private extension Step2ServiceSelectView {
         .buttonStyle(.plain)
     }
 
-    func activeSubscription(for service: Service) -> Subscription? {
-        service.subscriptions.first(where: { $0.isActive })
-    }
-
     func deleteSelectedService() {
         guard let serviceToDelete else { return }
         serviceToDelete.isArchived = true
@@ -320,11 +311,11 @@ private extension Step2ServiceSelectView {
     }
 
     var canReorderServices: Bool {
-        searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !filteredServices.isEmpty
+        viewData.canReorderServices
     }
 
     func moveServices(from source: IndexSet, to destination: Int) {
-        var reordered = filteredServices
+        var reordered = viewData.filteredServices
         reordered.move(fromOffsets: source, toOffset: destination)
 
         for (index, service) in reordered.enumerated() {
@@ -335,16 +326,14 @@ private extension Step2ServiceSelectView {
     }
 
     func reindexServices() {
-        for (index, service) in filteredServices.enumerated() {
+        for (index, service) in viewData.filteredServices.enumerated() {
             service.sortOrder = index
         }
     }
 
     func normalizeServiceOrderIfNeeded() {
-        let services = filteredServices
-        let needsNormalization = services.enumerated().contains { index, service in
-            service.sortOrder != index
-        }
+        let services = viewData.filteredServices
+        let needsNormalization = Step2ServiceSelectViewDataBuilder.needsOrderNormalization(services: services)
 
         guard needsNormalization else { return }
 

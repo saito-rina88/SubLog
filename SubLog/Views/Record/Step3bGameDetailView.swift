@@ -18,6 +18,16 @@ struct Step3bGameDetailView: View {
     @State private var memo: String = ""
     @State private var showTemplateSettings = false
 
+    private var viewData: Step3bGameDetailViewData {
+        Step3bGameDetailViewDataBuilder.build(
+            allServices: allServices,
+            serviceID: serviceID,
+            selectedTemplateIDs: selectedTemplateIDs,
+            templateQuantities: templateQuantities,
+            amountText: amount
+        )
+    }
+
     var body: some View {
         Form {
             Section {
@@ -40,12 +50,12 @@ struct Step3bGameDetailView: View {
             }
 
             Section {
-                if sortedTemplates.isEmpty {
+                if viewData.sortedTemplates.isEmpty {
                     Text("このサービスにはテンプレートがありません。設定から追加してください。")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(sortedTemplates, id: \.persistentModelID) { template in
+                    ForEach(viewData.sortedTemplates, id: \.persistentModelID) { template in
                         templateSelectionRow(for: template)
                     }
                 }
@@ -76,7 +86,7 @@ struct Step3bGameDetailView: View {
                     .textCase(.none)
                 }
             } footer: {
-                if hasSelectedTemplateWithoutAmount {
+                if viewData.hasSelectedTemplateWithoutAmount {
                     Text("金額未設定の購入内容を選択しています。必要に応じて金額を手入力してください。")
                 }
             }
@@ -113,7 +123,7 @@ struct Step3bGameDetailView: View {
                 .frame(maxWidth: .infinity)
                 .foregroundStyle(.white)
                 .listRowBackground(theme.current.primary)
-                .disabled(amountValue <= 0 || service == nil)
+                .disabled(!viewData.canSave)
             }
         }
         .safeAreaInset(edge: .bottom) {
@@ -129,7 +139,7 @@ struct Step3bGameDetailView: View {
             syncSelectedTemplates()
             applySelectedTemplateAmounts()
         }
-        .onChange(of: sortedTemplates.map(\.persistentModelID)) { _, _ in
+        .onChange(of: viewData.sortedTemplates.map(\.persistentModelID)) { _, _ in
             syncSelectedTemplates()
         }
         .sheet(isPresented: $showTemplateSettings) {
@@ -151,36 +161,23 @@ struct Step3bGameDetailView: View {
 
 private extension Step3bGameDetailView {
     var service: Service? {
-        allServices.first { $0.persistentModelID == serviceID }
+        viewData.service
     }
 
     var sortedTemplates: [GachaTemplate] {
-        guard let service else { return [] }
-        return service.gachaTemplates.sorted { lhs, rhs in
-            if lhs.sortOrder == rhs.sortOrder {
-                return lhs.label < rhs.label
-            }
-            return lhs.sortOrder < rhs.sortOrder
-        }
+        viewData.sortedTemplates
     }
 
     var selectedTemplates: [GachaTemplate] {
-        sortedTemplates.filter { selectedTemplateIDs.contains($0.persistentModelID) }
-    }
-
-    var hasSelectedTemplateWithoutAmount: Bool {
-        selectedTemplates.contains(where: { $0.amount == nil })
+        viewData.selectedTemplates
     }
 
     var amountValue: Int {
-        Int(amount) ?? 0
+        viewData.amountValue
     }
 
     var mondayFirstCalendar: Calendar {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.locale = Locale(identifier: "ja_JP")
-        calendar.firstWeekday = 2
-        return calendar
+        Step3bGameDetailViewDataBuilder.mondayFirstCalendar
     }
 
     func templateSelectionRow(for template: GachaTemplate) -> some View {
@@ -280,17 +277,17 @@ private extension Step3bGameDetailView {
     }
 
     var purchaseSummary: String {
-        selectedTemplates.map { template in
-            let quantity = templateQuantities[template.persistentModelID, default: 1]
-            return quantity > 1 ? "\(template.label) ×\(quantity)" : template.label
-        }
-        .joined(separator: "、")
+        viewData.purchaseSummary
     }
 
     func syncSelectedTemplates() {
-        let currentIDs = Set(sortedTemplates.map(\.persistentModelID))
-        selectedTemplateIDs = selectedTemplateIDs.intersection(currentIDs)
-        templateQuantities = templateQuantities.filter { currentIDs.contains($0.key) }
+        let syncedSelection = Step3bGameDetailViewDataBuilder.syncedSelection(
+            sortedTemplates: sortedTemplates,
+            selectedTemplateIDs: selectedTemplateIDs,
+            templateQuantities: templateQuantities
+        )
+        selectedTemplateIDs = syncedSelection.selectedTemplateIDs
+        templateQuantities = syncedSelection.templateQuantities
 
         if selectedTemplateIDs.isEmpty {
             amount = ""
@@ -306,10 +303,10 @@ private extension Step3bGameDetailView {
             return
         }
 
-        let total = selectedTemplates.reduce(0) { partialResult, template in
-            let quantity = templateQuantities[template.persistentModelID, default: 1]
-            return partialResult + (template.amount ?? 0) * quantity
-        }
+        let total = Step3bGameDetailViewDataBuilder.selectedTemplateTotal(
+            selectedTemplates: selectedTemplates,
+            templateQuantities: templateQuantities
+        )
 
         if total > 0 {
             amount = String(total)

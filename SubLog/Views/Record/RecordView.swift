@@ -1,27 +1,13 @@
 import SwiftUI
-import SwiftData
-
-enum RecordStep: Hashable {
-    case serviceSelect(serviceType: ServiceType)
-    case subscDetail(serviceID: PersistentIdentifier)
-    case gameDetail(serviceID: PersistentIdentifier)
-}
 
 struct RecordView: View {
-    @State private var path = NavigationPath()
+    @State private var flowState = RecordFlowState()
 
     var body: some View {
-        NavigationStack(path: $path) {
-            Step1TypeSelectView(path: $path)
+        NavigationStack(path: $flowState.path) {
+            Step1TypeSelectView(path: $flowState.path)
                 .navigationDestination(for: RecordStep.self) { step in
-                    switch step {
-                    case .serviceSelect(let type):
-                        Step2ServiceSelectView(serviceType: type, path: $path)
-                    case .subscDetail(let id):
-                        Step3aSubscDetailView(serviceID: id, path: $path)
-                    case .gameDetail(let id):
-                        Step3bGameDetailView(serviceID: id, path: $path)
-                    }
+                    RecordFlowDestinationBuilder.destination(for: step, path: $flowState.path)
                 }
         }
         .safeAreaInset(edge: .bottom) {

@@ -29,6 +29,16 @@ struct ServiceListView: View {
         _selectedServiceType = State(initialValue: serviceType ?? .subscription)
     }
 
+    private var viewData: ServiceListViewData {
+        ServiceListViewDataBuilder.build(
+            services: services,
+            currentServiceType: currentServiceType,
+            searchText: searchText,
+            managementMode: managementMode,
+            isPremium: entitlements.isPremium
+        )
+    }
+
     var body: some View {
         NavigationStack {
             content
@@ -82,7 +92,7 @@ private extension ServiceListView {
     var content: some View {
         if managementMode {
             managementContent
-        } else if services.isEmpty {
+        } else if viewData.isEmptyForCurrentType {
             emptyState
         } else {
             serviceList
@@ -91,24 +101,6 @@ private extension ServiceListView {
 
     var currentServiceType: ServiceType {
         serviceType ?? selectedServiceType
-    }
-
-    var filteredServices: [Service] {
-        services
-            .filter { $0.serviceType == currentServiceType && !$0.isArchived }
-            .filter {
-                searchText.isEmpty || $0.name.localizedCaseInsensitiveContains(searchText)
-            }
-            .sorted { lhs, rhs in
-                if managementMode {
-                    if lhs.sortOrder == rhs.sortOrder {
-                        return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
-                    }
-                    return lhs.sortOrder < rhs.sortOrder
-                }
-
-                return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
-            }
     }
 
     var navigationTitle: String {
@@ -133,7 +125,7 @@ private extension ServiceListView {
                 .padding(.horizontal, 20)
 
             HStack(alignment: .center, spacing: 12) {
-                Text(currentServiceType == .subscription ? "定期支払いのサービス" : "単発支払いのサービス")
+                Text(viewData.sectionTitle)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(sectionText)
 
@@ -143,13 +135,13 @@ private extension ServiceListView {
             }
             .padding(.horizontal, 20)
 
-            if filteredServices.isEmpty {
+            if viewData.isEmptyForCurrentType {
                 managementEmptyState
                     .padding(.horizontal, 20)
                 Spacer(minLength: 0)
             } else {
                 List {
-                    ForEach(filteredServices, id: \.persistentModelID) { service in
+                    ForEach(viewData.filteredServices, id: \.persistentModelID) { service in
                         managementServiceCard(service)
                             .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
                             .listRowBackground(Color.clear)
@@ -171,11 +163,11 @@ private extension ServiceListView {
 
     var serviceList: some View {
         List {
-            ForEach(filteredServices, id: \.persistentModelID) { service in
+            ForEach(viewData.serviceItems, id: \.service.persistentModelID) { item in
                 NavigationLink {
-                    destination(for: service)
+                    destination(for: item.service)
                 } label: {
-                    serviceRow(for: service)
+                    serviceRow(for: item)
                 }
             }
         }
@@ -217,7 +209,7 @@ private extension ServiceListView {
 
     var addServiceButton: some View {
         Button {
-            if entitlements.canAddService(currentCount: services.filter { !$0.isArchived }.count) {
+            if viewData.canAddService {
                 showAddService = true
             } else {
                 showPremiumSheet = true
@@ -290,7 +282,7 @@ private extension ServiceListView {
                 .font(.system(size: 44, weight: .regular))
                 .foregroundStyle(.secondary)
 
-            Text(emptyStateTitle)
+            Text(viewData.emptyStateTitle)
                 .font(.headline)
                 .multilineTextAlignment(.center)
 
@@ -324,11 +316,11 @@ private extension ServiceListView {
     }
 
     var canReorderServices: Bool {
-        searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !filteredServices.isEmpty
+        viewData.canReorderServices
     }
 
     func moveServices(from source: IndexSet, to destination: Int) {
-        var reordered = filteredServices
+        var reordered = viewData.filteredServices
         reordered.move(fromOffsets: source, toOffset: destination)
 
         for (index, service) in reordered.enumerated() {
@@ -339,14 +331,7 @@ private extension ServiceListView {
     }
 
     func reindexServices(for type: ServiceType) {
-        let typedServices = services
-            .filter { $0.serviceType == type && !$0.isArchived }
-            .sorted { lhs, rhs in
-                if lhs.sortOrder == rhs.sortOrder {
-                    return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
-                }
-                return lhs.sortOrder < rhs.sortOrder
-            }
+        let typedServices = ServiceListViewDataBuilder.sortedActiveServices(for: type, services: services)
 
         for (index, service) in typedServices.enumerated() {
             service.sortOrder = index
@@ -354,18 +339,8 @@ private extension ServiceListView {
     }
 
     func normalizeServiceOrderIfNeeded(for type: ServiceType) {
-        let typedServices = services
-            .filter { $0.serviceType == type && !$0.isArchived }
-            .sorted { lhs, rhs in
-                if lhs.sortOrder == rhs.sortOrder {
-                    return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
-                }
-                return lhs.sortOrder < rhs.sortOrder
-            }
-
-        let needsNormalization = typedServices.enumerated().contains { index, service in
-            service.sortOrder != index
-        }
+        let typedServices = ServiceListViewDataBuilder.sortedActiveServices(for: type, services: services)
+        let needsNormalization = ServiceListViewDataBuilder.needsOrderNormalization(for: typedServices)
 
         guard needsNormalization else { return }
 
@@ -378,21 +353,21 @@ private extension ServiceListView {
 }
 
 private extension ServiceListView {
-    func serviceRow(for service: Service) -> some View {
+    func serviceRow(for item: ServiceListItemData) -> some View {
         HStack(spacing: 12) {
-            ServiceIconView(service: service, size: 44)
+            ServiceIconView(service: item.service, size: 44)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(service.name)
+                Text(item.service.name)
                     .font(.headline)
-                Text(service.category.displayName)
+                Text(item.service.category.displayName)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
             Spacer()
 
-            Text(totalAmount(for: service), format: .currency(code: "JPY"))
+            Text(item.totalAmount, format: .currency(code: "JPY"))
                 .font(.headline)
                 .foregroundStyle(theme.current.primary)
         }
@@ -405,7 +380,7 @@ private extension ServiceListView {
                 .font(.system(size: 44, weight: .regular))
                 .foregroundStyle(.secondary)
 
-            Text(emptyStateTitle)
+            Text(viewData.emptyStateTitle)
                 .font(.headline)
                 .multilineTextAlignment(.center)
 
@@ -417,19 +392,6 @@ private extension ServiceListView {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(24)
-    }
-
-    var emptyStateTitle: String {
-        switch currentServiceType {
-        case .subscription:
-            return "まだ定期支払いのサービスが登録されていません"
-        case .game:
-            return "まだ単発支払いのサービスが登録されていません"
-        }
-    }
-
-    func totalAmount(for service: Service) -> Int {
-        service.payments.reduce(0) { $0 + $1.amount }
     }
 
     @ViewBuilder
